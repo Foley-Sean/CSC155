@@ -33,19 +33,24 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glClear(GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glUseProgram(renderingProgram);
-
+		
+		//Original Code to make triangle move left and right
+		/*
 		x += inc;
 		if (x > 1.0f) inc = -0.01f;
 		if (x < -1.0f) inc = 0.01f;
 		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
-
+		*/
+		
 		gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
+	
+	
 
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
-		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\eclipse-workspace\\a1\\src\\a1\\vertShader.glsl", "C:\\Users\\Sean Foley\\eclipse-workspace\\a1\\src\\a1\\fragShader.glsl");
+		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\fragShader.glsl");
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 	}
