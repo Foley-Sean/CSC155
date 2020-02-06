@@ -21,12 +21,12 @@ public class CircleCommand extends AbstractAction {
 		//if(arg0.getActionCommand() != null) {
 		if(myStarter.getOrbit() == 0) {
 			myStarter.setOrbit(1);
-			myStarter.orbit();
+			//myStarter.orbit();
 		
 		}
 		else if(myStarter.getOrbit() == 1) {
 			myStarter.setOrbit(0);
-			myStarter.orbit();
+			//myStarter.orbit();
 		}
 	}
 }

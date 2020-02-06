@@ -23,17 +23,13 @@ public class Starter extends JFrame implements GLEventListener
 	private int vao[] = new int[1];
 	private GL4 gl;
 	private int orbit;
+	private int upDown;
+	private int changeColor;
 	private float x = 0.0f;
 	private float y = 0.0f;
 	private float inc = 0.01f;
 	
-	//vars for moving in a circle
-	/*
-	private float radius = 0.2f;
-	private float speed = 0.01f;
-	private float angle = 0.0f;
-	*/
-	
+
 	public Starter()
 	{	setTitle("Chapter 2 - program 6");
 		setSize(400, 200);
@@ -59,6 +55,18 @@ public class Starter extends JFrame implements GLEventListener
 		botPanel.add(upDownButton);
 		UpDownCommand upDownCommad = new UpDownCommand(this);
 		upDownButton.setAction(upDownCommad);
+		
+		//change color key binding
+		JComponent contentPane = (JComponent) this.getContentPane();
+		int mapName = JComponent.WHEN_IN_FOCUSED_WINDOW;
+		InputMap imap = contentPane.getInputMap(mapName);
+		KeyStroke cKey = KeyStroke.getKeyStroke('c');
+		imap.put(cKey, "color");
+		ActionMap amap = contentPane.getActionMap();
+		ColorCommand myColorCommand = new ColorCommand(this);
+		amap.put("color", myColorCommand);
+		this.requestFocus();
+		
 		Animator animator = new Animator(myCanvas);
 		animator.start();
 	}
@@ -69,34 +77,17 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glUseProgram(renderingProgram);
 		
-		//Original Code to make triangle move left and right
-		/*
-		x += inc;
-		if (x > 1.0f) inc = -0.01f;
-		if (x < -1.0f) inc = 0.01f;
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
-		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
-		*/
-		if(orbit == 1) {
+		if(orbit == 1 && upDown== 0) {
+			
 			this.orbit();
 		}
-		/*
-		else if(orbit == 0) {
-			//
+		if(upDown == 1 && orbit == 0) {
+			
+			this.upDown();
 		}
-		*/
-		//rotate in a circle
-		/*
-		inc += 0.05f;
-		if(inc > 2 *  Math.PI ) inc = 0.0f;
-		x = (float) Math.cos(inc);
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
-		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
-		y =  (float) Math.sin(inc);
-		offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
-		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
-		*/
 		
+		this.changeColor();
+	
 		gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
 	
@@ -111,13 +102,10 @@ public class Starter extends JFrame implements GLEventListener
 	}
 	
 	public void orbit() {
-		//gl = (GL4) GLContext.getCurrentGL();
-		//gl = (GL4) GLContext.getCurrentGL();
-		//GL4 gl = (GL4) GLContext.getCurrentGL();
 		gl.glClear(GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 	    gl.glUseProgram(renderingProgram);
-		
+	
 		inc += 0.05f;
 		if(inc > 2 *  Math.PI ) inc = 0.0f;
 		x = (float) Math.cos(inc);
@@ -127,7 +115,7 @@ public class Starter extends JFrame implements GLEventListener
 		offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
-		gl.glDrawArrays(GL_TRIANGLES,0,3);
+		//gl.glDrawArrays(GL_TRIANGLES,0,3);
 		
 	}
 	
@@ -139,10 +127,20 @@ public class Starter extends JFrame implements GLEventListener
 		y += inc;
 		if (y > 1.0f) inc = -0.01f;
 		if (y < -1.0f) inc = 0.01f;
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
+		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
-		gl.glDrawArrays(GL_TRIANGLES,0,3);
+		//gl.glDrawArrays(GL_TRIANGLES,0,3);
+	}
+	
+	public void changeColor() {
+		gl.glClear(GL_COLOR_BUFFER_BIT);
+		gl.glClear(GL_DEPTH_BUFFER_BIT);
+	    gl.glUseProgram(renderingProgram);
+	    
+		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "changeColor");
+		gl.glProgramUniform1f(renderingProgram, offsetLoc, changeColor);
+	    
 	}
 
 	public static void main(String[] args) { new Starter(); }
@@ -158,5 +156,27 @@ public class Starter extends JFrame implements GLEventListener
 		// TODO Auto-generated method stub
 		return this.orbit;
 	}
+
+	public int getUpDown() {
+		// TODO Auto-generated method stub
+		return this.upDown;
+	}
+
+	public void setUpDown(int i) {
+		// TODO Auto-generated method stub
+		this.upDown = i;
+		
+	}
+
+	public int getChangeColor() {
+		// TODO Auto-generated method stub
+		return this.changeColor;
+	}
+
+	public void setChangeColor(int i) {
+		// TODO Auto-generated method stub
+		this.changeColor = i;
+	}
+
 }
 
