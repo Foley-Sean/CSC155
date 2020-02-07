@@ -1,6 +1,8 @@
 package a1;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.nio.*;
 import java.sql.Time;
 
@@ -17,7 +19,7 @@ import com.jogamp.opengl.GLContext;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.*;
 
-public class Starter extends JFrame implements GLEventListener
+public class Starter extends JFrame implements GLEventListener, MouseWheelListener
 {	private GLCanvas myCanvas;
 	private int renderingProgram;
 	private int vao[] = new int[1];
@@ -28,7 +30,7 @@ public class Starter extends JFrame implements GLEventListener
 	private float x = 0.0f;
 	private float y = 0.0f;
 	private float inc = 0.01f;
-	
+	private float deltaMouseWheel;
 
 	public Starter()
 	{	setTitle("Chapter 2 - program 6");
@@ -38,7 +40,6 @@ public class Starter extends JFrame implements GLEventListener
 		this.add(myCanvas);
 		this.setVisible(true);
 		
-		//code testing to add buttons
 		
 		//circle motion button
 		JPanel botPanel = new JPanel();
@@ -67,6 +68,9 @@ public class Starter extends JFrame implements GLEventListener
 		amap.put("color", myColorCommand);
 		this.requestFocus();
 		
+		//mouse wheel listener
+		this.addMouseWheelListener(this);
+		
 		Animator animator = new Animator(myCanvas);
 		animator.start();
 	}
@@ -77,17 +81,17 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glUseProgram(renderingProgram);
 		
-		if(orbit == 1 && upDown== 0) {
-			
+		if(orbit == 1) {
 			this.orbit();
 		}
-		if(upDown == 1 && orbit == 0) {
-			
+		if(upDown == 1) {
+		
 			this.upDown();
 		}
 		
 		this.changeColor();
-	
+		//this.scaleTriangle();
+		
 		gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
 	
@@ -101,18 +105,30 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glBindVertexArray(vao[0]);
 	}
 	
+	private void resetCoordinates() {
+		// TODO Auto-generated method stub
+		gl.glClear(GL_COLOR_BUFFER_BIT);
+		gl.glClear(GL_DEPTH_BUFFER_BIT);
+	    gl.glUseProgram(renderingProgram);
+	    
+	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
+		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
+		
+	}
 	public void orbit() {
 		gl.glClear(GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 	    gl.glUseProgram(renderingProgram);
-	
+	    
 		inc += 0.05f;
 		if(inc > 2 *  Math.PI ) inc = 0.0f;
 		x = (float) Math.cos(inc);
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
+		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "orbit");
+		gl.glProgramUniform1f(renderingProgram, offsetLoc, 1);
+		offsetLoc = gl.glGetUniformLocation(renderingProgram, "oxinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
 		y =  (float) Math.sin(inc);
-		offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
+		offsetLoc = gl.glGetUniformLocation(renderingProgram, "oyinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
 		//gl.glDrawArrays(GL_TRIANGLES,0,3);
@@ -142,6 +158,27 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, changeColor);
 	    
 	}
+	
+	private void scaleTriangle() {
+		// TODO Auto-generated method stub
+		gl.glClear(GL_COLOR_BUFFER_BIT);
+		gl.glClear(GL_DEPTH_BUFFER_BIT);
+	    gl.glUseProgram(renderingProgram);
+	    
+	    if(deltaMouseWheel > 0) {
+	    	inc = 0.01f;
+	    }
+	    
+	    if(deltaMouseWheel < 0) {
+	    	inc = -0.01f;
+	    }
+	    
+	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "scale");
+	    gl.glProgramUniform1f(renderingProgram, offsetLoc, inc);
+	    
+		
+	}
+
 
 	public static void main(String[] args) { new Starter(); }
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {}
@@ -176,6 +213,14 @@ public class Starter extends JFrame implements GLEventListener
 	public void setChangeColor(int i) {
 		// TODO Auto-generated method stub
 		this.changeColor = i;
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent arg0) {
+		// TODO Auto-generated method stub
+		
+		deltaMouseWheel = arg0.getWheelRotation();
+		//scaleTriangle(deltaMouseWheel);
 	}
 
 }
