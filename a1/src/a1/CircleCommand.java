@@ -20,6 +20,7 @@ public class CircleCommand extends AbstractAction {
 		// TODO Auto-generated method stub
 		//if(arg0.getActionCommand() != null) {
 		if(myStarter.getOrbit() == 0) {
+			myStarter.setUpDown(0);
 			myStarter.setOrbit(1);
 			//myStarter.orbit();
 		

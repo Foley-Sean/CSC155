@@ -24,9 +24,10 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	private int renderingProgram;
 	private int vao[] = new int[1];
 	private GL4 gl;
-	private int orbit;
-	private int upDown;
+	private int orbit = 0;
+	private int upDown = 0;
 	private int changeColor;
+	private int scale;
 	private float x = 0.0f;
 	private float y = 0.0f;
 	private float inc = 0.01f;
@@ -80,16 +81,15 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		gl.glClear(GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glUseProgram(renderingProgram);
-		
-		if(orbit == 1) {
+		//this.setOrbit(1);
+		if(this.getOrbit() == 1) {
 			this.orbit();
 		}
-		if(upDown == 1) {
-		
+		if(this.getUpDown() == 1) {
 			this.upDown();
 		}
+			this.changeColor();
 		
-		this.changeColor();
 		//this.scaleTriangle();
 		
 		gl.glDrawArrays(GL_TRIANGLES,0,3);
@@ -107,26 +107,31 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	
 	private void resetCoordinates() {
 		// TODO Auto-generated method stub
-		gl.glClear(GL_COLOR_BUFFER_BIT);
-		gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    gl.glUseProgram(renderingProgram);
+		//gl.glClear(GL_COLOR_BUFFER_BIT);
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+	    //gl.glUseProgram(renderingProgram);
 	    
 	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
 		
 	}
 	public void orbit() {
-		gl.glClear(GL_COLOR_BUFFER_BIT);
-		gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    gl.glUseProgram(renderingProgram);
-	    
+		//gl.glClear(GL_COLOR_BUFFER_BIT);
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+	   // gl.glUseProgram(renderingProgram);
+		
+	    this.setUpDown(0);
+	    //upDown = 0;
+	    int offsetLock = gl.glGetUniformLocation(renderingProgram, "orbit");
+		gl.glProgramUniform1f(renderingProgram, offsetLock, orbit);
+		
 		inc += 0.05f;
-		if(inc > 2 *  Math.PI ) inc = 0.0f;
+		if(inc >= 2 * Math.PI)  inc = 0.0f;
+		
 		x = (float) Math.cos(inc);
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "orbit");
-		gl.glProgramUniform1f(renderingProgram, offsetLoc, 1);
-		offsetLoc = gl.glGetUniformLocation(renderingProgram, "oxinc");
+		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "oxinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
+		
 		y =  (float) Math.sin(inc);
 		offsetLoc = gl.glGetUniformLocation(renderingProgram, "oyinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
@@ -136,23 +141,28 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	}
 	
 	public void upDown() {
-		gl.glClear(GL_COLOR_BUFFER_BIT);
-		gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    gl.glUseProgram(renderingProgram);
+		//gl.glClear(GL_COLOR_BUFFER_BIT);
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+	   // gl.glUseProgram(renderingProgram);
+	   // this.setOrbit(0);
+	    orbit = 0;
 	    
 		y += inc;
 		if (y > 1.0f) inc = -0.01f;
 		if (y < -1.0f) inc = 0.01f;
-		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
+		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "upDown");
+		gl.glProgramUniform1f(renderingProgram, offsetLoc, upDown);
+		
+		offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
 		//gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
 	
 	public void changeColor() {
-		gl.glClear(GL_COLOR_BUFFER_BIT);
-		gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    gl.glUseProgram(renderingProgram);
+		//gl.glClear(GL_COLOR_BUFFER_BIT);
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+	    //gl.glUseProgram(renderingProgram);
 	    
 		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "changeColor");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, changeColor);
@@ -161,10 +171,13 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	
 	private void scaleTriangle() {
 		// TODO Auto-generated method stub
-		gl.glClear(GL_COLOR_BUFFER_BIT);
-		gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    gl.glUseProgram(renderingProgram);
-	    
+		//gl.glClear(GL_COLOR_BUFFER_BIT);
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+	   // gl.glUseProgram(renderingProgram);
+	    //need to fix this
+		//int offsetLock = gl.glGetUniformLocation(renderingProgram, "wantScale");
+		//gl.glProgramUniform1f(renderingProgram, offsetLock, scale);
+		
 	    if(deltaMouseWheel > 0) {
 	    	inc = 0.01f;
 	    }
@@ -173,7 +186,10 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	    	inc = -0.01f;
 	    }
 	    
-	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "scale");
+	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "sxinc");
+	    gl.glProgramUniform1f(renderingProgram, offsetLoc, inc);
+	    
+	    offsetLoc = gl.glGetUniformLocation(renderingProgram, "syinc");
 	    gl.glProgramUniform1f(renderingProgram, offsetLoc, inc);
 	    
 		
