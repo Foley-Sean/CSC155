@@ -27,7 +27,7 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	private int orbit = 0;
 	private int upDown = 0;
 	private int changeColor;
-	private int scale;
+	private float scale = 0.0f;
 	private float x = 0.0f;
 	private float y = 0.0f;
 	private float inc = 0.01f;
@@ -81,22 +81,21 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		gl.glClear(GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glUseProgram(renderingProgram);
-		//this.setOrbit(1);
+		
 		if(this.getOrbit() == 1) {
 			this.orbit();
 		}
 		if(this.getUpDown() == 1) {
 			this.upDown();
 		}
-			this.changeColor();
 		
-		//this.scaleTriangle();
+		this.scaleTriangle();
+		this.changeColor();
 		
 		gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
 	
 	
-
 	public void init(GLAutoDrawable drawable)
 	{	gl = (GL4) GLContext.getCurrentGL();
 		//this needs to be changed to access the shader files on any machine
@@ -104,24 +103,9 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 	}
-	
-	private void resetCoordinates() {
-		// TODO Auto-generated method stub
-		//gl.glClear(GL_COLOR_BUFFER_BIT);
-		//gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    //gl.glUseProgram(renderingProgram);
-	    
-	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "inc");
-		gl.glProgramUniform1f(renderingProgram, offsetLoc, x);
-		
-	}
+
 	public void orbit() {
-		//gl.glClear(GL_COLOR_BUFFER_BIT);
-		//gl.glClear(GL_DEPTH_BUFFER_BIT);
-	   // gl.glUseProgram(renderingProgram);
-		
-	   // this.setUpDown(0);
-	    //upDown = 0;
+
 	    int offsetLock = gl.glGetUniformLocation(renderingProgram, "orbit");
 		gl.glProgramUniform1f(renderingProgram, offsetLock, orbit);
 		
@@ -136,17 +120,10 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		offsetLoc = gl.glGetUniformLocation(renderingProgram, "oyinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
-		//gl.glDrawArrays(GL_TRIANGLES,0,3);
-		
 	}
 	
 	public void upDown() {
-		//gl.glClear(GL_COLOR_BUFFER_BIT);
-		//gl.glClear(GL_DEPTH_BUFFER_BIT);
-	   // gl.glUseProgram(renderingProgram);
-	   // this.setOrbit(0);
-	    //orbit = 0;
-	    
+		
 		y += inc;
 		if (y > 1.0f) inc = -0.01f;
 		if (y < -1.0f) inc = 0.01f;
@@ -156,43 +133,20 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		offsetLoc = gl.glGetUniformLocation(renderingProgram, "yinc");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, y);
 		
-		//gl.glDrawArrays(GL_TRIANGLES,0,3);
 	}
 	
 	public void changeColor() {
-		//gl.glClear(GL_COLOR_BUFFER_BIT);
-		//gl.glClear(GL_DEPTH_BUFFER_BIT);
-	    //gl.glUseProgram(renderingProgram);
-	    
+
 		int offsetLoc = gl.glGetUniformLocation(renderingProgram, "changeColor");
 		gl.glProgramUniform1f(renderingProgram, offsetLoc, changeColor);
 	    
 	}
 	
 	private void scaleTriangle() {
-		// TODO Auto-generated method stub
-		//gl.glClear(GL_COLOR_BUFFER_BIT);
-		//gl.glClear(GL_DEPTH_BUFFER_BIT);
-	   // gl.glUseProgram(renderingProgram);
-	    //need to fix this
-		//int offsetLock = gl.glGetUniformLocation(renderingProgram, "wantScale");
-		//gl.glProgramUniform1f(renderingProgram, offsetLock, scale);
-		
-	    if(deltaMouseWheel > 0) {
-	    	inc = 0.01f;
-	    }
+
+	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "sinc");
+	    gl.glProgramUniform1f(renderingProgram, offsetLoc, scale);
 	    
-	    if(deltaMouseWheel < 0) {
-	    	inc = -0.01f;
-	    }
-	    
-	    int offsetLoc = gl.glGetUniformLocation(renderingProgram, "sxinc");
-	    gl.glProgramUniform1f(renderingProgram, offsetLoc, inc);
-	    
-	    offsetLoc = gl.glGetUniformLocation(renderingProgram, "syinc");
-	    gl.glProgramUniform1f(renderingProgram, offsetLoc, inc);
-	    
-		
 	}
 
 
@@ -200,43 +154,42 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {}
 	public void dispose(GLAutoDrawable drawable) {}
 
+	//getters and setters
+	
 	public void setOrbit(int i) {
-		// TODO Auto-generated method stub
 		this.orbit = i;
 	}
 
 	public int getOrbit() {
-		// TODO Auto-generated method stub
 		return this.orbit;
 	}
 
 	public int getUpDown() {
-		// TODO Auto-generated method stub
 		return this.upDown;
 	}
 
 	public void setUpDown(int i) {
-		// TODO Auto-generated method stub
 		this.upDown = i;
 		
 	}
 
 	public int getChangeColor() {
-		// TODO Auto-generated method stub
 		return this.changeColor;
 	}
 
 	public void setChangeColor(int i) {
-		// TODO Auto-generated method stub
 		this.changeColor = i;
 	}
-
+	public float getScale() {
+		return this.scale;
+	}
+	
+	//mouse wheel listener
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
-		// TODO Auto-generated method stub
 		
-		deltaMouseWheel = arg0.getWheelRotation();
-		//scaleTriangle(deltaMouseWheel);
+		if(arg0.getWheelRotation() > 0) scale += 0.01f;
+		else if(arg0.getWheelRotation() < 0) scale -= 0.01f;
 	}
 
 }

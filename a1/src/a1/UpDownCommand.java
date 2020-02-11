@@ -14,11 +14,8 @@ public class UpDownCommand extends AbstractAction {
 	}
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
 		if(myStarter.getUpDown() == 0) {
-			//myStarter.setOrbit(0);
 			myStarter.setUpDown(1);
-			
 		}
 		else if(myStarter.getUpDown() == 1) {
 			myStarter.setUpDown(0);

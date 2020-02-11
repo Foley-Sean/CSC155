@@ -1,6 +1,6 @@
 #version 430
 
-uniform float xinc, yinc, changeColor, oxinc, oyinc, scale, orbit, upDown, sxinc, syinc;
+uniform float xinc, yinc, changeColor, oxinc, oyinc, scale, orbit, upDown, sinc;
 out vec4 gradientColor;
 
 void main(void)
@@ -15,23 +15,19 @@ void main(void)
 		}
 		//both orbit and updown
 		if(orbit == 1 && upDown == 1){
-			gl_Position = vec4(0.25+oxinc, -0.25+oyinc+yinc, 0.0, 1.0);
+			gl_Position = vec4(0.25+oxinc+xinc+sinc, -0.25+oyinc+yinc, 0.0, 1.0);
 		}
 		//orbit
 		else if(orbit == 1 && upDown == 0){
-			gl_Position = vec4(0.25+oxinc,-0.25+oyinc, 0.0, 1.0);
+			gl_Position = vec4(0.25+oxinc+sinc,-0.25+oyinc, 0.0, 1.0);
 		}
 		//go up and down
 		else if(upDown == 1 && orbit == 0){
-			gl_Position = vec4(0.25,-0.25+yinc, 0.0, 1.0);
+			gl_Position = vec4(0.25+sinc,-0.25+yinc, 0.0, 1.0);
 		}
-		//scale
-		else if(scale == 1){
-			gl_Position = vec4(0.25+sxinc,-0.25+syinc, 0.0, 1.0);
-		}
-
+		//default
 		else{
-			gl_Position = vec4(0.25+sxinc,-0.25, 0.0, 1.0);
+			gl_Position = vec4(0.25+sinc,-0.25, 0.0, 1.0);
 		}
 
 	}
@@ -46,22 +42,19 @@ void main(void)
 	  }
 	  //both orbit and updown
 	  if(orbit == 1 && upDown == 1){
-		  gl_Position = vec4(-0.25+oxinc, -0.25+oyinc+yinc, 0.0, 1.0);
+		  gl_Position = vec4(-0.25+oxinc-sinc, -0.25+oyinc+yinc, 0.0, 1.0);
 	  }
 	  //orbit
 	  else if(orbit == 1 && upDown == 0){
-		gl_Position = vec4(-0.25+oxinc,-0.25+oyinc, 0.0, 1.0);
+		gl_Position = vec4(-0.25+oxinc-sinc,-0.25+oyinc, 0.0, 1.0);
 	  }
 	  //go up and down
 	  else if(upDown == 1 && orbit == 0){
-		gl_Position = vec4(-0.25,-0.25+yinc, 0.0, 1.0);
+		gl_Position = vec4(-0.25-sinc,-0.25+yinc, 0.0, 1.0);
 	  }
-	  //scale
-	  else if(scale == 1){
-		gl_Position = vec4(-0.25+sxinc,-0.25+syinc, 0.0, 1.0);
-	  }
+	  //default
 	  else{
-		  gl_Position = vec4(-0.25-sxinc,-0.25, 0.0, 1.0);
+		  gl_Position = vec4(-0.25-sinc,-0.25, 0.0, 1.0);
 	  }
 
     }
@@ -74,31 +67,27 @@ void main(void)
 	  else if(changeColor == 0){
 		  gradientColor  = vec4(0.0, 1.0, 0.0, 1.0);
 	  }
-	  //bot updown and orbit
+	  //both updown and orbit
 	  if(orbit == 1 && upDown == 1){
-		  gl_Position = vec4(0.0+oxinc,.4330127019+oyinc+yinc, 0.0, 1.0);
+		  gl_Position = vec4(0.0+oxinc,.4330127019+oyinc+yinc+sinc, 0.0, 1.0);
 	  }
 	  //orbit
 	  else if(orbit == 1 && upDown == 0){
-		  gl_Position = vec4(0.0+oxinc, 0.4330127019+oyinc, 0.0, 1.0);
+		  gl_Position = vec4(0.0+oxinc, 0.4330127019+oyinc+sinc, 0.0, 1.0);
 	  }
 	  //go up and down
 	  else if(upDown == 1 && orbit == 0){
-	 	gl_Position = vec4(0.0,0.4330127019+yinc, 0.0, 1.0);
-	  }
-	  //scale
-	  else if(scale == 1){
-	 	gl_Position = vec4(0.0+sxinc,0.4330127019+syinc, 0.0, 1.0);
+	 	gl_Position = vec4(0.0,0.4330127019+yinc+sinc, 0.0, 1.0);
 	  }
 	  //default
 	  else{
-		  gl_Position = vec4(0.0, 0.4330127019+sxinc, 0.0, 1.0);
+		  gl_Position = vec4(0.0, 0.4330127019+sinc, 0.0, 1.0);
 	  }
 
     }
 }
 
-
+//Original Shader
 /*
 void main(void)
 { if (gl_VertexID == 0) gl_Position = vec4(0.25+oxinc,-0.25+oyinc, 0.0, 1.0);
