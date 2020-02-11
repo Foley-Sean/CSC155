@@ -120,7 +120,7 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		//gl.glClear(GL_DEPTH_BUFFER_BIT);
 	   // gl.glUseProgram(renderingProgram);
 		
-	    this.setUpDown(0);
+	   // this.setUpDown(0);
 	    //upDown = 0;
 	    int offsetLock = gl.glGetUniformLocation(renderingProgram, "orbit");
 		gl.glProgramUniform1f(renderingProgram, offsetLock, orbit);
@@ -145,7 +145,7 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		//gl.glClear(GL_DEPTH_BUFFER_BIT);
 	   // gl.glUseProgram(renderingProgram);
 	   // this.setOrbit(0);
-	    orbit = 0;
+	    //orbit = 0;
 	    
 		y += inc;
 		if (y > 1.0f) inc = -0.01f;
