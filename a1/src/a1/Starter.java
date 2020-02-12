@@ -98,12 +98,11 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	
 	public void init(GLAutoDrawable drawable)
 	{	gl = (GL4) GLContext.getCurrentGL();
-		//this needs to be changed to access the shader files on any machine
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\fragShader.glsl");
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 		
-		//test to se if this is right location for version printing
+		
 		System.out.println("OpenGL Version: " + gl.glGetString(GL.GL_VERSION));
         System.out.println("JOGL Version: " + Package.getPackage("com.jogamp.opengl").getImplementationVersion());
         System.out.println("Java Version: " + System.getProperty("java.version"));
@@ -193,8 +192,8 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent arg0) {
 		
-		if(arg0.getWheelRotation() > 0) scale += 0.01f;
-		else if(arg0.getWheelRotation() < 0) scale -= 0.01f;
+		if(arg0.getWheelRotation() > 0 && scale < 0.5f) scale += 0.01f;
+		else if(arg0.getWheelRotation() < 0 && scale > 0.01) scale -= 0.01f;
 	}
 
 }
