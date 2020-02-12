@@ -34,7 +34,7 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 	private float deltaMouseWheel;
 
 	public Starter()
-	{	setTitle("Chapter 2 - program 6");
+	{	setTitle("Assignment 1");
 		setSize(400, 200);
 		myCanvas = new GLCanvas();
 		myCanvas.addGLEventListener(this);
@@ -102,6 +102,11 @@ public class Starter extends JFrame implements GLEventListener, MouseWheelListen
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a1\\src\\a1\\fragShader.glsl");
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
+		
+		//test to se if this is right location for version printing
+		System.out.println("OpenGL Version: " + gl.glGetString(GL.GL_VERSION));
+        System.out.println("JOGL Version: " + Package.getPackage("com.jogamp.opengl").getImplementationVersion());
+        System.out.println("Java Version: " + System.getProperty("java.version"));
 	}
 
 	public void orbit() {
