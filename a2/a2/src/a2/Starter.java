@@ -73,6 +73,22 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glDrawArrays(GL_TRIANGLES, 0, 18); 
 		mvStack.popMatrix();
 		
+		// my attempt at sun as a sphere//
+		mvStack.pushMatrix();
+		mvStack.translate(0.0f, 0.0f, 0.0f);
+		mvStack.pushMatrix();
+		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		gl.glEnable(GL_DEPTH_TEST);
+		
+		
+		
+		
+		
+		
 		//-----------------------  cube == planet  
 		mvStack.pushMatrix();
 		mvStack.translate((float)Math.sin(tf)*4.0f, 0.0f, (float)Math.cos(tf)*4.0f);
@@ -102,8 +118,9 @@ public class Starter extends JFrame implements GLEventListener
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		startTime = System.currentTimeMillis();
-		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\eclipse-workspace\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\eclipse-workspace\\a2\\src\\a2\\fragShader.glsl");
+		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
 		setupVertices();
+		
 		cameraX = 0.0f; cameraY = 0.0f; cameraZ = 12.0f;
 	}
 
@@ -132,7 +149,10 @@ public class Starter extends JFrame implements GLEventListener
 			-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, //LF
 			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f  //RR
 		};
-
+		
+		//sphere
+		
+		
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 		gl.glGenBuffers(vbo.length, vbo, 0);
