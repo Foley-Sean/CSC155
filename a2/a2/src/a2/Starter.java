@@ -22,7 +22,7 @@ public class Starter extends JFrame implements GLEventListener
 	
 	// allocate variables for display() function
 	private FloatBuffer vals = Buffers.newDirectFloatBuffer(16);
-	private Matrix4fStack mvStack = new Matrix4fStack(7);
+	private Matrix4fStack mvStack = new Matrix4fStack(8);
 	private Matrix4f pMat = new Matrix4f();
 	private Matrix4f vMat = new Matrix4f();  // view matrix
 	private Matrix4f mMat = new Matrix4f();  // model matrix
@@ -106,6 +106,7 @@ public class Starter extends JFrame implements GLEventListener
 		//Earth, orbits the sun//
 		mvStack.pushMatrix();
 		mvStack.translate((float)Math.sin(tf)*4.0f, 0.0f, (float)Math.cos(tf)*4.0f);
+		mvStack.pushMatrix();
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
@@ -153,7 +154,7 @@ public class Starter extends JFrame implements GLEventListener
 		
 		
 		
-		mvStack.popMatrix(); mvStack.popMatrix();
+		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
 			
 		
 		
