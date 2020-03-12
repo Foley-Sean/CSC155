@@ -17,7 +17,7 @@ public class Starter extends JFrame implements GLEventListener
 	private double elapsedTime;
 	private int renderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[10];
+	private int vbo[] = new int[11];
 	private float cameraX, cameraY, cameraZ;
 	
 	// allocate variables for display() function
@@ -45,6 +45,7 @@ public class Starter extends JFrame implements GLEventListener
 	private int earthTexture;
 	private int sunTexture;
 	private int moonTexture;
+	private int pyrTexture;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -151,10 +152,30 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
 		mvStack.popMatrix();
 		
+		//double pyramid, orbits the sun
+		mvStack.pushMatrix();
+		mvStack.translate((float)Math.sin(tf)*6.0f, 0.0f, (float)Math.cos(tf)*6.0f);
+		mvStack.pushMatrix();
+		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
+		gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+		
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, pyrTexture);
+		
+		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+		mvStack.popMatrix();
 		
 		
 		
-		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
+		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
 			
 		
 		
@@ -203,6 +224,7 @@ public class Starter extends JFrame implements GLEventListener
 		sunTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_sun.jpg");
 		earthTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\earth_night.jpg");
 		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_moon.jpg");
+		pyrTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\awesome_texture.jpg");
 	}
 
 	private void setupVertices()
@@ -222,21 +244,37 @@ public class Starter extends JFrame implements GLEventListener
 			1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
 		};
 		
-		float[] pyramidPositions =
-		{	-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //front
+		float[] doublePyramidPositions =
+		{	
+				//top pyramid
+				
+			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //front
+			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+			
 			1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,    //right
+			1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+			
 			1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f,  //back
+			1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+			
 			-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  //left
+			-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+			
 			-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, //LF
-			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f  //RR
+			-1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+			
+			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,  //RR
+			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f
+			
+
 		};
 		
-		//sphere for the sun
+		//spheres
 		mySun = new Sphere(96);
 		myEarth = new Sphere(96);
 		myMoon = new Sphere(96);
 		
-		//use the sun as a standard for them all to get indices
+		//use the sun as a standard for all spheres to get indices
 		numSphereVerts = mySun.getIndices().length;
 		
 		int[] indices = mySun.getIndices();
@@ -301,6 +339,16 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
 		FloatBuffer moonNorBuf = Buffers.newDirectFloatBuffer(nvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, moonNorBuf.limit()*4, moonNorBuf, GL_STATIC_DRAW);
+		
+		//double pyramid buffers
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+		FloatBuffer pyrBuf = Buffers.newDirectFloatBuffer(doublePyramidPositions);
+		gl.glBufferData(GL_ARRAY_BUFFER, pyrBuf.limit()*4, pyrBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
+		FloatBuffer pyrTexBuf = Buffers.newDirectFloatBuffer(tvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, pyrTexBuf.limit()*4, pyrTexBuf, GL_STATIC_DRAW);
+		
 	}
 
 	public static void main(String[] args) { new Starter(); }
