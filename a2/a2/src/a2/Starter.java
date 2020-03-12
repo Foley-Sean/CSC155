@@ -17,7 +17,7 @@ public class Starter extends JFrame implements GLEventListener
 	private double elapsedTime;
 	private int renderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[5];
+	private int vbo[] = new int[10];
 	private float cameraX, cameraY, cameraZ;
 	
 	// allocate variables for display() function
@@ -35,9 +35,16 @@ public class Starter extends JFrame implements GLEventListener
 	private float sunLocX, sunLocY, sunLocZ;
 	private Sphere mySun;
 	private int numSphereVerts;
+	//sphere for Earth
+	private float earthLocX, earthLocY, earthLocZ;
+	private Sphere myEarth;
+	//sphere for Moon
+	private float moonLocX, moonLocY, moonLocZ;
+	private Sphere myMoon;
 	//textures
 	private int earthTexture;
 	private int sunTexture;
+	private int moonTexture;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -71,28 +78,12 @@ public class Starter extends JFrame implements GLEventListener
 		
 		tf = elapsedTime/1000.0;  // time factor
 
-		// ----------------------  pyramid == sun 
-		/*
-		mvStack.pushMatrix();
-		mvStack.translate(0.0f, 0.0f, 0.0f);
-		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 1.0f, 0.0f, 0.0f);
-		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(0);
-		gl.glEnable(GL_DEPTH_TEST);
-		gl.glDrawArrays(GL_TRIANGLES, 0, 18); 
-		mvStack.popMatrix();
-		*/
-		
-		// my attempt at sun as a sphere//
+		//sun as a sphere//
 		mvStack.pushMatrix();
 		mvStack.translate(sunLocX, sunLocY, sunLocZ);
 		mvStack.pushMatrix();
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
-		//gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
@@ -110,6 +101,57 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
 		mvStack.popMatrix();
+		
+		
+		//Earth, orbits the sun//
+		mvStack.pushMatrix();
+		mvStack.translate((float)Math.sin(tf)*4.0f, 0.0f, (float)Math.cos(tf)*4.0f);
+		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+		gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+		
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, earthTexture);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
+		mvStack.popMatrix();
+		
+		//Moon, orbits the Earth which orbits the sun
+		mvStack.pushMatrix();
+		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
+		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.scale(0.25f, 0.25f, 0.25f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+		gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+		
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, moonTexture);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
+		mvStack.popMatrix();
+		
+		
+		
 		
 		mvStack.popMatrix(); mvStack.popMatrix();
 			
@@ -159,6 +201,7 @@ public class Starter extends JFrame implements GLEventListener
 		
 		sunTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_sun.jpg");
 		earthTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\earth_night.jpg");
+		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_moon.jpg");
 	}
 
 	private void setupVertices()
@@ -189,6 +232,10 @@ public class Starter extends JFrame implements GLEventListener
 		
 		//sphere for the sun
 		mySun = new Sphere(96);
+		myEarth = new Sphere(96);
+		myMoon = new Sphere(96);
+		
+		//use the sun as a standard for them all to get indices
 		numSphereVerts = mySun.getIndices().length;
 		
 		int[] indices = mySun.getIndices();
@@ -214,7 +261,8 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 		gl.glGenBuffers(vbo.length, vbo, 0);
-
+		
+		//Sun buffers
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		FloatBuffer vertBuf = Buffers.newDirectFloatBuffer(pvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, vertBuf.limit()*4, vertBuf, GL_STATIC_DRAW);
@@ -227,20 +275,31 @@ public class Starter extends JFrame implements GLEventListener
 		FloatBuffer norBuf = Buffers.newDirectFloatBuffer(nvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, norBuf.limit()*4,norBuf, GL_STATIC_DRAW);
 		
-		//sun buffers
-		/*
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		FloatBuffer vertBuf = Buffers.newDirectFloatBuffer(pvalues);
-		gl.glBufferData(GL_ARRAY_BUFFER, vertBuf.limit()*4, vertBuf, GL_STATIC_DRAW);
-		//texture buffer for sun
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-		FloatBuffer texBuf = Buffers.newDirectFloatBuffer(tvalues);
-		gl.glBufferData(GL_ARRAY_BUFFER, texBuf.limit()*4, texBuf, GL_STATIC_DRAW);
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-		FloatBuffer norBuf = Buffers.newDirectFloatBuffer(nvalues);
-		gl.glBufferData(GL_ARRAY_BUFFER, norBuf.limit()*4,norBuf, GL_STATIC_DRAW);
-		*/
+		//Earth buffers
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+		FloatBuffer earthVertBuf = Buffers.newDirectFloatBuffer(pvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, earthVertBuf.limit()*4, earthVertBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+		FloatBuffer earthTexBuf = Buffers.newDirectFloatBuffer(tvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, earthTexBuf.limit()*4, earthTexBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
+		FloatBuffer earthNorBuf = Buffers.newDirectFloatBuffer(nvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, earthNorBuf.limit()*4, earthNorBuf, GL_STATIC_DRAW);
+		
+		//Moon buffers
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
+		FloatBuffer	moonVertBuf = Buffers.newDirectFloatBuffer(pvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, moonVertBuf.limit()*4, moonVertBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
+		FloatBuffer moonTexBuf = Buffers.newDirectFloatBuffer(tvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, moonTexBuf.limit()*4, moonTexBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
+		FloatBuffer moonNorBuf = Buffers.newDirectFloatBuffer(nvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, moonNorBuf.limit()*4, moonNorBuf, GL_STATIC_DRAW);
 	}
 
 	public static void main(String[] args) { new Starter(); }
