@@ -137,6 +137,7 @@ public class Starter extends JFrame implements GLEventListener
 		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
 		mvStack.pushMatrix();
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		//mvStack.pushMatrix();
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
@@ -155,11 +156,11 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glFrontFace(GL_CCW);
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
-		mvStack.popMatrix();
+		mvStack.popMatrix(); //mvStack.popMatrix();
 		
 		//shuttle, orbits Earth's moon
 		mvStack.pushMatrix();
-		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
+		mvStack.translate((float)Math.sin(tf)*0.33f, (float)Math.sin(tf)*0.33f, (float)Math.cos(tf)*0.33f);
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
@@ -201,6 +202,7 @@ public class Starter extends JFrame implements GLEventListener
 		
 		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
 		mvStack.popMatrix();
+		
 		
 		
 		
