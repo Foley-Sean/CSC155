@@ -53,6 +53,8 @@ public class Starter extends JFrame implements GLEventListener
 	private int pyrTexture;
 	private int shuttleTexture;
 	private int dolphinTexture;
+	//camera
+	private Camera camera = new Camera(0, 0, 8);
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -83,8 +85,9 @@ public class Starter extends JFrame implements GLEventListener
 
 		// push view matrix onto the stack
 		mvStack.pushMatrix();
-		mvStack.translate(-cameraX, -cameraY, -cameraZ);
-		
+		//mvStack.translate(-cameraX, -cameraY, -cameraZ);
+		//combine with camara vMat
+		mvStack.mul(camera.getVMat());
 		tf = elapsedTime/1000.0;  // time factor
 
 		//sun as a sphere//
@@ -481,3 +484,7 @@ public class Starter extends JFrame implements GLEventListener
 	}
 	public void dispose(GLAutoDrawable drawable) {}
 }
+
+//actions
+
+
