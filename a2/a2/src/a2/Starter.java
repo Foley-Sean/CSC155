@@ -17,11 +17,11 @@ public class Starter extends JFrame implements GLEventListener
 	private double elapsedTime;
 	private int renderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[14];
+	private int vbo[] = new int[17];
 	private float cameraX, cameraY, cameraZ;
 	
 	// allocate variables for display() function
-	private FloatBuffer vals = Buffers.newDirectFloatBuffer(16);
+	private FloatBuffer vals = Buffers.newDirectFloatBuffer(17);
 	private Matrix4fStack mvStack = new Matrix4fStack(8);
 	private Matrix4f pMat = new Matrix4f();
 	private Matrix4f vMat = new Matrix4f();  // view matrix
@@ -44,12 +44,15 @@ public class Starter extends JFrame implements GLEventListener
 	//imported shuttle object
 	private int numObjVertices;
 	private ImportedModel myModel;
+	private int numDolphinObjVertices;
+	private ImportedModel myDolphin;
 	//textures
 	private int earthTexture;
 	private int sunTexture;
 	private int moonTexture;
 	private int pyrTexture;
 	private int shuttleTexture;
+	private int dolphinTexture;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -65,6 +68,7 @@ public class Starter extends JFrame implements GLEventListener
 	public void display(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		gl.glClear(GL_COLOR_BUFFER_BIT);
+		gl.glClearColor(0.0f, 0.0f, 0.25f, 1.0f);
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		elapsedTime = System.currentTimeMillis() - startTime;
 
@@ -87,7 +91,7 @@ public class Starter extends JFrame implements GLEventListener
 		mvStack.pushMatrix();
 		mvStack.translate(sunLocX, sunLocY, sunLocZ);
 		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.rotate((float)tf * 0.2f, 0.0f, 1.0f, 0.0f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -112,7 +116,7 @@ public class Starter extends JFrame implements GLEventListener
 		mvStack.pushMatrix();
 		mvStack.translate((float)Math.sin(tf)*4.0f, 0.0f, (float)Math.cos(tf)*4.0f);
 		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.rotate((float)tf * 1.3f, 0.0f, 1.0f, 0.0f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
@@ -134,9 +138,9 @@ public class Starter extends JFrame implements GLEventListener
 		
 		//Moon, orbits the Earth which orbits the sun
 		mvStack.pushMatrix();
-		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
+		mvStack.translate(0.0f, (float)Math.sin(tf*0.5f)*2.0f, (float)Math.cos(tf*0.5f)*2.0f);
 		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.rotate((float)tf*1.5f, 0.0f, 1.0f, 0.0f);
 		//mvStack.pushMatrix();
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
@@ -160,8 +164,8 @@ public class Starter extends JFrame implements GLEventListener
 		
 		//shuttle, orbits Earth's moon
 		mvStack.pushMatrix();
-		mvStack.translate((float)Math.sin(tf)*0.33f, (float)Math.sin(tf)*0.33f, (float)Math.cos(tf)*0.33f);
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.translate((float)Math.sin(tf*1.5f)*0.33f, (float)Math.sin(tf*1.5f)*0.33f, (float)Math.cos(tf*1.5f)*0.33f);
+		mvStack.rotate((float)tf*0.1f, 0.0f, 1.0f, 0.0f);
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
@@ -184,9 +188,9 @@ public class Starter extends JFrame implements GLEventListener
 		
 		//double pyramid, orbits the sun
 		mvStack.pushMatrix();
-		mvStack.translate((float)Math.sin(tf)*6.0f, 0.0f, (float)Math.cos(tf)*6.0f);
+		mvStack.translate((float)Math.sin(tf*0.2f)*6.0f, 0.0f, (float)Math.cos(tf*0.2f)*6.0f);
 		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.rotate((float)tf*2.0f, 0.0f, 1.0f, 0.0f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
@@ -203,48 +207,41 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
 		mvStack.popMatrix();
 		
+		//Dolphin (lol) orbits the weird planet I made
+		mvStack.pushMatrix();
+		mvStack.translate((float)Math.sin(tf*1.8f)*1.5f, (float)Math.sin(tf*1.8f), (float)Math.cos(tf*1.8f)*1.5f);
+		mvStack.rotate((float)tf*2.0f, 0.0f, 1.0f, 0.0f);
+		mvStack.scale(0.8f, 0.8f, 0.8f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
-		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[15]);
+		gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, dolphinTexture);
+
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glFrontFace(GL_LEQUAL);
+		gl.glDrawArrays(GL_TRIANGLES, 0, myDolphin.getNumVertices());
+		mvStack.popMatrix();
 		
 		
 		
 		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); //mvStack.popMatrix();
 			
 		
-		
-		//-----------------------  cube == planet  
-		/*
-		mvStack.pushMatrix();
-		mvStack.translate((float)Math.sin(tf)*4.0f, 0.0f, (float)Math.cos(tf)*4.0f);
-		mvStack.pushMatrix();
-		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
-		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(0);
-		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
-		mvStack.popMatrix();
-		*/
-		//-----------------------  smaller cube == moon
-		/*
-		mvStack.pushMatrix();
-		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
-		mvStack.rotate((float)tf, 0.0f, 0.0f, 1.0f);
-		mvStack.scale(0.25f, 0.25f, 0.25f);
-		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(0);
-		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
-		mvStack.popMatrix();  mvStack.popMatrix();  mvStack.popMatrix();
-		mvStack.popMatrix();
-		*/
 	}
 
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		startTime = System.currentTimeMillis();
 		myModel = new ImportedModel("\\shuttle.obj");
+		myDolphin = new ImportedModel("\\dolphinHighPoly.obj");
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
 		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
@@ -260,6 +257,7 @@ public class Starter extends JFrame implements GLEventListener
 		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_moon.jpg");
 		pyrTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\awesome_texture.jpg");
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\spstob_1.jpg");
+		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\Dolphin_HighPolyUV.png");
 	}
 
 	private void setupVertices()
@@ -374,6 +372,27 @@ public class Starter extends JFrame implements GLEventListener
 			sNvalues[i*3+2] = (float) (normals[i]).z();
 		}
 		
+		//imported dolphin
+		numDolphinObjVertices = myDolphin.getNumVertices();
+		Vector3f[] dVertices = myDolphin.getVertices();
+		Vector2f[] dTexCoords = myDolphin.getTexCoords();
+		Vector3f[] dNormals = myDolphin.getNormals();
+		
+		float[] dPvalues = new float[numDolphinObjVertices*3];
+		float[] dTvalues = new float[numDolphinObjVertices*2];
+		float[] dNvalues = new float[numDolphinObjVertices*3];
+		
+		for (int i=0; i<numDolphinObjVertices; i++)
+		{	dPvalues[i*3]   = (float) (dVertices[i]).x();
+			dPvalues[i*3+1] = (float) (dVertices[i]).y();
+			dPvalues[i*3+2] = (float) (dVertices[i]).z();
+			dTvalues[i*2]   = (float) (dTexCoords[i]).x();
+			dTvalues[i*2+1] = (float) (dTexCoords[i]).y();
+			dNvalues[i*3]   = (float) (dNormals[i]).x();
+			dNvalues[i*3+1] = (float) (dNormals[i]).y();
+			dNvalues[i*3+2] = (float) (dNormals[i]).z();
+		}
+		
 		
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
@@ -439,6 +458,19 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
 		FloatBuffer sNorBuf = Buffers.newDirectFloatBuffer(sNvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, sNorBuf.limit()*4, sNorBuf, GL_STATIC_DRAW);
+		
+		//dolphin buffers
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+		FloatBuffer dVertBuf = Buffers.newDirectFloatBuffer(dPvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dVertBuf.limit()*4, dVertBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[15]);
+		FloatBuffer dTexBuf = Buffers.newDirectFloatBuffer(dTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dTexBuf.limit()*4, dTexBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[16]);
+		FloatBuffer dNorBuf = Buffers.newDirectFloatBuffer(dNvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dNorBuf.limit()*4, dNorBuf, GL_STATIC_DRAW);
 		
 	}
 
