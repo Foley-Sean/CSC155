@@ -25,8 +25,6 @@ public class Camera {
 	public void setViewMatrix() {
 		Vector3f camLoc = new Vector3f(xLoc, yLoc, zLoc);
 		
-		//code here to handle yaw and stuff
-		
 		//create u,v,n vecs
 		//interactions with pan and pitch
 		float cosPitch = (float) Math.cos(Math.toRadians(pitch));
@@ -40,11 +38,10 @@ public class Camera {
 		
 		//load uvn into vMat
 		float[] vMatVals = new float[] {
-				u.x, u.y, u.z, 0,
-				v.x, v.y, v.z, 0,
-				n.x, n.y, n.z, 0, 
-				0,   0,   0,   1
-				-(u.dot(camLoc)), -(v.dot(camLoc)), -(n.dot(camLoc)), 1
+				u.x, v.x, n.x, 0,
+				u.y, v.y, n.y, 0,
+				u.z, v.z, n.z, 0, 
+				-((camLoc.x)), -((camLoc.y)), -((camLoc.z)), 1
 		};
 		//set new vMat
 		vMat.set(vMatVals);
@@ -59,12 +56,12 @@ public class Camera {
 	//movement functions
 	
 	public void moveForward() {
-		this.zLoc += .1;
+		this.zLoc -= .1;
 		setViewMatrix();
 	}
 	
 	public void moveBackward() {
-		this.zLoc -= .1;
+		this.zLoc += .1;
 		setViewMatrix();
 	}
 	
@@ -89,22 +86,22 @@ public class Camera {
 	}
 	
 	public void panLeft() {
-		this.pan += .1;
+		this.pan += 1;
 		setViewMatrix();
 	}
 	
 	public void panRight() {
-		this.pan -= .1;
+		this.pan -= 1;
 		setViewMatrix();
 	}
 	
 	public void pitchUp() {
-		this.pitch += .1;
+		this.pitch += 1;
 		setViewMatrix();
 	}
 	
 	public void pitchDown() {
-		this.pitch -= .1;
+		this.pitch -= 1;
 		setViewMatrix();
 	}
 	

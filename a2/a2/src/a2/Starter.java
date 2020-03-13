@@ -54,7 +54,7 @@ public class Starter extends JFrame implements GLEventListener
 	private int shuttleTexture;
 	private int dolphinTexture;
 	//camera
-	private Camera camera = new Camera(0, 0, 8);
+	private Camera camera;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -63,6 +63,94 @@ public class Starter extends JFrame implements GLEventListener
 		myCanvas.addGLEventListener(this);
 		this.add(myCanvas);
 		this.setVisible(true);
+		
+		//set binds
+		JComponent contentPane = (JComponent) this.getContentPane();
+		int mapName = JComponent.WHEN_IN_FOCUSED_WINDOW;
+		InputMap imap = contentPane.getInputMap(mapName);
+		
+		//move forward
+		KeyStroke wKey = KeyStroke.getKeyStroke('w');
+		imap.put(wKey, "forward");
+		ActionMap amap = contentPane.getActionMap();
+		MoveForward myMoveF = new MoveForward(this);
+		amap.put("forward", myMoveF);
+		this.requestFocus();
+		
+		//move backwards
+		KeyStroke sKey = KeyStroke.getKeyStroke('s');
+		imap.put(sKey, "backward");
+		amap = contentPane.getActionMap();
+		MoveBackward myMoveB = new MoveBackward(this);
+		amap.put("backward", myMoveB);
+		this.requestFocus();
+		
+		//strafe left
+		KeyStroke aKey = KeyStroke.getKeyStroke('a');
+		imap.put(aKey, "strafeLeft");
+		amap = contentPane.getActionMap();
+		StrafeLeft myStrafeLeft = new StrafeLeft(this);
+		amap.put("strafeLeft", myStrafeLeft);
+		this.requestFocus();
+		
+		//strafe right
+		KeyStroke dKey = KeyStroke.getKeyStroke('d');
+		imap.put(dKey, "strafeRight");
+		amap = contentPane.getActionMap();
+		StrafeRight myStrafeRight = new StrafeRight(this);
+		amap.put("strafeRight", myStrafeRight);
+		this.requestFocus();
+		
+		//move up
+		KeyStroke qKey = KeyStroke.getKeyStroke('q');
+		imap.put(qKey, "moveUp");
+		amap = contentPane.getActionMap();
+		MoveUp myMoveUp = new MoveUp(this);
+		amap.put("moveUp", myMoveUp);
+		this.requestFocus();
+		
+		//move down
+		KeyStroke eKey = KeyStroke.getKeyStroke('e');
+		imap.put(eKey, "moveDown");
+		amap = contentPane.getActionMap();
+		MoveDown myMoveDown = new MoveDown(this);
+		amap.put("moveDown", myMoveDown);
+		this.requestFocus();
+		
+		//pan left
+		KeyStroke leftKey = KeyStroke.getKeyStroke("LEFT");
+		imap.put(leftKey, "panLeft");
+		amap = contentPane.getActionMap();
+		PanLeft myPanLeft = new PanLeft(this);
+		amap.put("panLeft", myPanLeft);
+		this.requestFocus();
+		
+		//pan right
+		KeyStroke rightKey = KeyStroke.getKeyStroke("RIGHT");
+		imap.put(rightKey, "panRight");
+		amap = contentPane.getActionMap();
+		PanRight myPanRight = new PanRight(this);
+		amap.put("panRight", myPanRight);
+		this.requestFocus();
+		
+		//pitch up
+		KeyStroke upKey = KeyStroke.getKeyStroke("UP");
+		imap.put(upKey, "pitchUp");
+		amap = contentPane.getActionMap();
+		PitchUp myPitchUp = new PitchUp(this);
+		amap.put("pitchUp", myPitchUp);
+		this.requestFocus();
+		
+		//pitch down
+		KeyStroke downKey = KeyStroke.getKeyStroke("DOWN");
+		imap.put(downKey, "pitchDown");
+		amap = contentPane.getActionMap();
+		PitchDown myPitchDown = new PitchDown(this);
+		amap.put("pitchDown", myPitchDown);
+		this.requestFocus();
+		
+		
+		
 		Animator animator = new Animator(myCanvas);
 		animator.start();
 	}
@@ -252,7 +340,8 @@ public class Starter extends JFrame implements GLEventListener
 
 		setupVertices();
 		
-		cameraX = 0.0f; cameraY = 0.0f; cameraZ = 12.0f;
+		//cameraX = 0.0f; cameraY = 0.0f; cameraZ = 12.0f;
+		camera = new Camera(0.0f, 0.0f, 12.0f);
 		sunLocX = 0.0f; sunLocY = 0.0f; sunLocZ = -1.0f;
 		
 		sunTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_sun.jpg");
@@ -483,8 +572,59 @@ public class Starter extends JFrame implements GLEventListener
 		pMat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 	}
 	public void dispose(GLAutoDrawable drawable) {}
+
+	public void MoveForward() {
+		// TODO Auto-generated method stub
+		this.camera.moveForward();
+	}
+
+	public void moveBackward() {
+		// TODO Auto-generated method stub
+		this.camera.moveBackward();
+	}
+	
+	public void strafeLeft() {
+		this.camera.moveLeft();
+	}
+
+	public void strafeRight() {
+		// TODO Auto-generated method stub
+		this.camera.moveRight();
+	}
+
+	public void moveUp() {
+		// TODO Auto-generated method stub
+		this.camera.moveUp();
+	}
+
+	public void moveDown() {
+		// TODO Auto-generated method stub
+		this.camera.moveDown();
+	}
+
+	public void panLeft() {
+		// TODO Auto-generated method stub
+		this.camera.panLeft();
+		
+	}
+
+	public void panRight() {
+		// TODO Auto-generated method stub
+		this.camera.panRight();
+	}
+
+	public void pitchUp() {
+		// TODO Auto-generated method stub
+		this.camera.pitchUp();
+		
+	}
+
+	public void pitchDown() {
+		// TODO Auto-generated method stub
+		this.camera.pitchDown();
+		
+	}
 }
 
-//actions
 
 
