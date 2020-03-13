@@ -17,7 +17,7 @@ public class Starter extends JFrame implements GLEventListener
 	private double elapsedTime;
 	private int renderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[11];
+	private int vbo[] = new int[14];
 	private float cameraX, cameraY, cameraZ;
 	
 	// allocate variables for display() function
@@ -41,11 +41,15 @@ public class Starter extends JFrame implements GLEventListener
 	//sphere for Moon
 	private float moonLocX, moonLocY, moonLocZ;
 	private Sphere myMoon;
+	//imported shuttle object
+	private int numObjVertices;
+	private ImportedModel myModel;
 	//textures
 	private int earthTexture;
 	private int sunTexture;
 	private int moonTexture;
 	private int pyrTexture;
+	private int shuttleTexture;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -131,6 +135,7 @@ public class Starter extends JFrame implements GLEventListener
 		//Moon, orbits the Earth which orbits the sun
 		mvStack.pushMatrix();
 		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
+		//mvStack.pushMatrix();
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
@@ -150,6 +155,28 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glFrontFace(GL_CCW);
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
+		mvStack.popMatrix();
+		
+		//shuttle, orbits Earth's moon
+		mvStack.pushMatrix();
+		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
+		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
+		mvStack.scale(0.15f, 0.15f, 0.15f);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+		gl.glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, shuttleTexture);
+
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glFrontFace(GL_LEQUAL);
+		gl.glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
 		mvStack.popMatrix();
 		
 		//double pyramid, orbits the sun
@@ -175,7 +202,9 @@ public class Starter extends JFrame implements GLEventListener
 		
 		
 		
-		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
+		
+		
+		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); //mvStack.popMatrix();
 			
 		
 		
@@ -211,6 +240,7 @@ public class Starter extends JFrame implements GLEventListener
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		startTime = System.currentTimeMillis();
+		myModel = new ImportedModel("..\\shuttle.obj");
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
 		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
@@ -225,6 +255,7 @@ public class Starter extends JFrame implements GLEventListener
 		earthTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\earth_night.jpg");
 		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_moon.jpg");
 		pyrTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\awesome_texture.jpg");
+		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\spstob_1.jpg");
 	}
 
 	private void setupVertices()
@@ -247,7 +278,7 @@ public class Starter extends JFrame implements GLEventListener
 		float[] doublePyramidPositions =
 		{	
 				//top pyramid
-				
+			/*	
 			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //front
 			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
 			
@@ -265,7 +296,28 @@ public class Starter extends JFrame implements GLEventListener
 			
 			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,  //RR
 			1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f
-			
+			*/
+				
+			0.0f,0.0f,0.5f,     1.0f,0.5f,0.5f,       1.0f,-0.5f,0.5f,
+			0.0f,0.0f,0.5f,    -1.0f,0.5f,0.5f,      -1.0f,-0.5f,0.5f,  //front facing
+
+			0.0f,0.0f,-0.5f,   -1.0f,-0.5f,-0.5f,    -1.0f,0.5f,-0.5f,
+			0.0f,0.0f,-0.5f,    1.0f,-0.5f,-0.5f,     1.0f,0.5f,-0.5f,   //rear facing
+
+			-1.0f,-0.5f,0.5f,  -1.0f,-0.5f,-0.5f,    1.0f,-0.5f,-0.5f,
+			-1.0f,-0.5f,0.5f,   1.0f,-0.5f,-0.5f,    1.0f,-0.5f,0.5f,   //bottom
+
+			-1.0f,0.5f,0.5f,   -1.0f,0.5f,-0.5f,     1.0f,0.5f,0.5f,
+			-1.0f,0.5f-0.5f,    1.0f,0.5f,0.5f,     1.0f,0.5f,-0.5f,    //top
+
+
+			-1.0f,0.5f,0.5f,   -1.0f,0.5f,-0.5f,     -1.0f,0.0f,0.0f,
+			-1.0f,-0.5f,-0.5f, -1.0f,-0.5f,0.5f,     -1.0f,0.0f,0.0f,      //left side
+
+			1.0f,0.5f,0.5f,    1.0f,0.5f,-0.5f,      1.0f,0.0f,0.0f,
+			1.0f,-0.5f,0.5f,   1.0f,-0.5f,-0.5f,     1.0f,0.0f,0.0f     // right side	
+				
+				
 
 		};
 		
@@ -296,6 +348,28 @@ public class Starter extends JFrame implements GLEventListener
 			nvalues[i*3+1]= (float)(norm[indices[i]]).y;
 			nvalues[i*3+2]=(float) (norm[indices[i]]).z;
 		}
+		
+		//imported space shuttle 
+		numObjVertices = myModel.getNumVertices();
+		Vector3f[] vertices = myModel.getVertices();
+		Vector2f[] texCoords = myModel.getTexCoords();
+		Vector3f[] normals = myModel.getNormals();
+		
+		float[] sPvalues = new float[numObjVertices*3];
+		float[] sTvalues = new float[numObjVertices*2];
+		float[] sNvalues = new float[numObjVertices*3];
+		
+		for (int i=0; i<numObjVertices; i++)
+		{	sPvalues[i*3]   = (float) (vertices[i]).x();
+			sPvalues[i*3+1] = (float) (vertices[i]).y();
+			sPvalues[i*3+2] = (float) (vertices[i]).z();
+			sTvalues[i*2]   = (float) (texCoords[i]).x();
+			sTvalues[i*2+1] = (float) (texCoords[i]).y();
+			sNvalues[i*3]   = (float) (normals[i]).x();
+			sNvalues[i*3+1] = (float) (normals[i]).y();
+			sNvalues[i*3+2] = (float) (normals[i]).z();
+		}
+		
 		
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
@@ -348,6 +422,19 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
 		FloatBuffer pyrTexBuf = Buffers.newDirectFloatBuffer(tvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, pyrTexBuf.limit()*4, pyrTexBuf, GL_STATIC_DRAW);
+		
+		//space shuttle buffers
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
+		FloatBuffer sVertBuf = Buffers.newDirectFloatBuffer(sPvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, sVertBuf.limit()*4, sVertBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+		FloatBuffer sTexBuf = Buffers.newDirectFloatBuffer(sTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, sTexBuf.limit()*4, sTexBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+		FloatBuffer sNorBuf = Buffers.newDirectFloatBuffer(sNvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, sNorBuf.limit()*4, sNorBuf, GL_STATIC_DRAW);
 		
 	}
 
