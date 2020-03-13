@@ -135,7 +135,7 @@ public class Starter extends JFrame implements GLEventListener
 		//Moon, orbits the Earth which orbits the sun
 		mvStack.pushMatrix();
 		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
-		//mvStack.pushMatrix();
+		mvStack.pushMatrix();
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
 		mvStack.scale(0.25f, 0.25f, 0.25f);
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
@@ -161,7 +161,8 @@ public class Starter extends JFrame implements GLEventListener
 		mvStack.pushMatrix();
 		mvStack.translate(0.0f, (float)Math.sin(tf)*2.0f, (float)Math.cos(tf)*2.0f);
 		mvStack.rotate((float)tf, 0.0f, 1.0f, 0.0f);
-		mvStack.scale(0.15f, 0.15f, 0.15f);
+		mvStack.scale(0.25f, 0.25f, 0.25f);
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
@@ -177,6 +178,7 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glFrontFace(GL_LEQUAL);
 		gl.glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
+		mvStack.popMatrix();
 		mvStack.popMatrix();
 		
 		//double pyramid, orbits the sun
@@ -240,7 +242,7 @@ public class Starter extends JFrame implements GLEventListener
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		startTime = System.currentTimeMillis();
-		myModel = new ImportedModel("..\\shuttle.obj");
+		myModel = new ImportedModel("\\shuttle.obj");
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
 		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
