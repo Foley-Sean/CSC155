@@ -275,7 +275,7 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glFrontFace(GL_LEQUAL);
 		gl.glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
 		mvStack.popMatrix();
-		mvStack.popMatrix();
+		//mvStack.popMatrix();
 		
 		//double pyramid, orbits the sun
 		mvStack.pushMatrix();
@@ -323,7 +323,7 @@ public class Starter extends JFrame implements GLEventListener
 		
 		
 		
-		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); //mvStack.popMatrix();
+		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
 			
 		
 	}

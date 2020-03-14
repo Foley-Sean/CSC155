@@ -28,7 +28,7 @@ public class Camera {
 		//create u,v,n vecs
 		//interactions with pan and pitch
 		float cosPitch = (float) Math.cos(Math.toRadians(pitch));
-		float sinPitch = (float) Math.cos(Math.toRadians(pitch));
+		float sinPitch = (float) Math.sin(Math.toRadians(pitch));
 		float cosPan = (float) Math.cos(Math.toRadians(pan));
 		float sinPan = (float) Math.sin(Math.toRadians(pan));
 		
