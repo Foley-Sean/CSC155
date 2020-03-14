@@ -349,8 +349,8 @@ public class Starter extends JFrame implements GLEventListener
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		startTime = System.currentTimeMillis();
-		myModel = new ImportedModel("\\shuttle.obj");
-		myDolphin = new ImportedModel("\\dolphinHighPoly.obj");
+		myModel = new ImportedModel("../shuttle.obj");
+		myDolphin = new ImportedModel("../dolphinHighPoly.obj");
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
 		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\axes_fragshader.glsl");
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
@@ -362,12 +362,12 @@ public class Starter extends JFrame implements GLEventListener
 		camera = new Camera(0.0f, 0.0f, 12.0f);
 		sunLocX = 0.0f; sunLocY = 0.0f; sunLocZ = -1.0f;
 		
-		sunTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_sun.jpg");
-		earthTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\earth_night.jpg");
-		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\2k_moon.jpg");
-		pyrTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\awesome_texture.jpg");
-		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\spstob_1.jpg");
-		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\Dolphin_HighPolyUV.png");
+		sunTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\2k_sun.jpg");
+		earthTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\earth_night.jpg");
+		moonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\2k_moon.jpg");
+		pyrTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\awesome_texture.jpg");
+		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\spstob_1.jpg");
+		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\Dolphin_HighPolyUV.png");
 	}
 
 	private void setupVertices()
