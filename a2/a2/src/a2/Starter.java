@@ -16,6 +16,7 @@ public class Starter extends JFrame implements GLEventListener
 	private double startTime = 0.0;
 	private double elapsedTime;
 	private int renderingProgram;
+	private int axesRenderingProgram;
 	private int vao[] = new int[1];
 	private int vbo[] = new int[17];
 	private float cameraX, cameraY, cameraZ;
@@ -55,6 +56,8 @@ public class Starter extends JFrame implements GLEventListener
 	private int dolphinTexture;
 	//camera
 	private Camera camera;
+	//axes
+	private boolean showAxes;
 	
 	public Starter()
 	{	setTitle("Assignment 2");
@@ -149,7 +152,13 @@ public class Starter extends JFrame implements GLEventListener
 		amap.put("pitchDown", myPitchDown);
 		this.requestFocus();
 		
-		
+		//display axes
+		KeyStroke showAxes = KeyStroke.getKeyStroke("SPACE");
+		imap.put(showAxes, "showAxes");
+		amap = contentPane.getActionMap();
+		DisplayAxes myShowAxes = new DisplayAxes(this);
+		amap.put("showAxes", myShowAxes);
+		this.requestFocus();
 		
 		Animator animator = new Animator(myCanvas);
 		animator.start();
@@ -275,7 +284,7 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glFrontFace(GL_LEQUAL);
 		gl.glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
 		mvStack.popMatrix();
-		//mvStack.popMatrix();
+		mvStack.popMatrix();
 		
 		//double pyramid, orbits the sun
 		mvStack.pushMatrix();
@@ -298,7 +307,7 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
 		mvStack.popMatrix();
 		
-		//Dolphin (lol) orbits the weird planet I made
+		//Dolphin orbits the weird planet I made
 		mvStack.pushMatrix();
 		mvStack.translate((float)Math.sin(tf*1.8f)*1.5f, (float)Math.sin(tf*1.8f), (float)Math.cos(tf*1.8f)*1.5f);
 		mvStack.rotate((float)tf*2.0f, 0.0f, 1.0f, 0.0f);
@@ -321,9 +330,18 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glDrawArrays(GL_TRIANGLES, 0, myDolphin.getNumVertices());
 		mvStack.popMatrix();
 		
-		
-		
-		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();
+		if(this.showAxes) {
+			gl.glUseProgram(axesRenderingProgram);
+			
+			mvLoc = gl.glGetUniformLocation(renderingProgram, "mv_matrix");
+			projLoc = gl.glGetUniformLocation(renderingProgram, "proj_matrix");
+			gl.glUniformMatrix4fv(mvLoc, 1, false, mvStack.get(vals));
+			gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+			
+			gl.glDrawArrays(GL_LINES, 0, 12);
+		}
+		//clear stack
+		mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix(); mvStack.popMatrix();// mvStack.popMatrix();
 			
 		
 	}
@@ -334,7 +352,7 @@ public class Starter extends JFrame implements GLEventListener
 		myModel = new ImportedModel("\\shuttle.obj");
 		myDolphin = new ImportedModel("\\dolphinHighPoly.obj");
 		renderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\fragShader.glsl");
-		
+		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a2\\a2\\src\\a2\\axes_fragshader.glsl");
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
 		pMat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 
@@ -371,7 +389,7 @@ public class Starter extends JFrame implements GLEventListener
 		
 		float[] doublePyramidPositions =
 		{	
-				//top pyramid
+				
 			/*	
 			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,    //front
 			-1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
@@ -623,6 +641,16 @@ public class Starter extends JFrame implements GLEventListener
 		// TODO Auto-generated method stub
 		this.camera.pitchDown();
 		
+	}
+
+	public void displayAxes() {
+		// TODO Auto-generated method stub
+		if(this.showAxes == true) {
+			this.showAxes = false;
+		}
+		else if(this.showAxes == false) {
+			this.showAxes = true;
+		}
 	}
 }
 
