@@ -22,8 +22,8 @@ public class Starter extends JFrame implements GLEventListener
 	private float cameraX, cameraY, cameraZ;
 	
 	// allocate variables for display() function
-	private FloatBuffer vals = Buffers.newDirectFloatBuffer(17);
-	private Matrix4fStack mvStack = new Matrix4fStack(8);
+	private FloatBuffer vals = Buffers.newDirectFloatBuffer(30);
+	private Matrix4fStack mvStack = new Matrix4fStack(20);
 	private Matrix4f pMat = new Matrix4f();
 	private Matrix4f vMat = new Matrix4f();  // view matrix
 	private Matrix4f mMat = new Matrix4f();  // model matrix
