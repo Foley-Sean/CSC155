@@ -16,6 +16,7 @@ struct Material
 
 uniform vec4 globalAmbient;
 uniform PositionalLight light;
+uniform PositionalLight mvLight;
 uniform Material material;
 uniform mat4 mv_matrix; 
 uniform mat4 proj_matrix;
@@ -47,22 +48,23 @@ void main(void)
 	shadowFactor = shadowFactor / 4.0;
 
 	// hi res PCF
-/*	float width = 2.5;
+	float width = 2.5;
 	float endp = width * 3.0 + width/2.0;
 	for (float m=-endp ; m<=endp ; m=m+width)
 	{	for (float n=-endp ; n<=endp ; n=n+width)
 		{	shadowFactor += lookup(m,n);
 	}	}
 	shadowFactor = shadowFactor / 64.0;
-*/
+
 	// this would produce normal hard shadows
 //	shadowFactor = lookup(0.0, 0.0);
 
 	vec4 shadowColor = globalAmbient * material.ambient
-				+ light.ambient * material.ambient;
+				+ mvLight.ambient * light.ambient * material.ambient;
+				//+ mvLight.ambient * material.ambient;
 	
-	vec4 lightedColor = light.diffuse * material.diffuse * max(dot(L,N),0.0)
-				+ light.specular * material.specular
+	vec4 lightedColor = mvLight.diffuse * light.diffuse * material.diffuse * max(dot(L,N),0.0)
+				+ mvLight.specular * light.specular * material.specular
 				* pow(max(dot(H,N),0.0),material.shininess*3.0);
 	
 	fragColor = vec4((shadowColor.xyz + shadowFactor*(lightedColor.xyz)),1.0);

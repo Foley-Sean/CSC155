@@ -26,13 +26,20 @@ public class Starter extends JFrame implements GLEventListener
 	private Vector3f pyrLoc = new Vector3f(-1.0f, 0.1f, 0.3f);
 	private Vector3f cameraLoc = new Vector3f(0.0f, 0.2f, 6.0f);
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
+	//moveable light loc
+	private Vector3f movLightLoc = new Vector3f(0.0f, 2.8f, -1.5f);
 	
 	// white light properties
 	private float[] globalAmbient = new float[] { 0.7f, 0.7f, 0.7f, 1.0f };
 	private float[] lightAmbient = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };
 	private float[] lightDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
 	private float[] lightSpecular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-		
+	
+	//moveable light properties
+	private float[]  movLightAmbient = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };
+	private float[]  movLightDiffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+	private float[]  movLightSpecular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+	
 	// gold material
 	private float[] GmatAmb = Utils.goldAmbient();
 	private float[] GmatDif = Utils.goldDiffuse();
@@ -67,12 +74,18 @@ public class Starter extends JFrame implements GLEventListener
 	private Matrix4f invTrMat = new Matrix4f(); // inverse-transpose
 	private int mvLoc, projLoc, nLoc, sLoc;
 	private int globalAmbLoc, ambLoc, diffLoc, specLoc, posLoc, mambLoc, mdiffLoc, mspecLoc, mshiLoc;
+	//moveable light
+	private int movAmbLoc, movDiffLoc, movSpecLoc, movPosLoc;
 	private float aspect;
 	private Vector3f currentLightPos = new Vector3f();
+	private Vector3f movCurrentLightPos = new Vector3f();
 	private float[] lightPos = new float[3];
+	//moveable light
+	private float[] movLightPos = new float[3];
 	private Vector3f origin = new Vector3f(0.0f, 0.0f, 0.0f);
 	private Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 	private Camera camera;
+	
 	public Starter()
 	{	setTitle("Chapter8 - program 2");
 		setSize(800, 800);
@@ -184,8 +197,12 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		
 		currentLightPos.set(lightLoc);
+		movCurrentLightPos.set(movLightLoc);
 		
 		lightVmat.identity().setLookAt(currentLightPos, origin, up);	// vector from light to origin
+		//moveable light
+		lightVmat.identity().setLookAt(movCurrentLightPos, origin, up);
+		
 		lightPmat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 
 		gl.glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer[0]);
@@ -443,7 +460,7 @@ public class Starter extends JFrame implements GLEventListener
 		}
 
 		// torus definition
-		myTorus = new Torus(0.6f, 0.4f, 48);
+		myTorus = new Torus(0.6f, 0.4f, 96); //def 48
 		numTorusVertices = myTorus.getNumVertices();
 		numTorusIndices = myTorus.getNumIndices();
 		vertices = myTorus.getVertices();
@@ -497,7 +514,11 @@ public class Starter extends JFrame implements GLEventListener
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 	
 		currentLightPos.mulPosition(vMatrix);
+		movCurrentLightPos.mulPosition(vMatrix);
+		
 		lightPos[0]=currentLightPos.x(); lightPos[1]=currentLightPos.y(); lightPos[2]=currentLightPos.z();
+		movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
+		
 		
 		// set current material values
 		matAmb = thisAmb;
@@ -516,6 +537,13 @@ public class Starter extends JFrame implements GLEventListener
 		mspecLoc = gl.glGetUniformLocation(renderingProgram, "material.specular");
 		mshiLoc = gl.glGetUniformLocation(renderingProgram, "material.shininess");
 	
+		//moveable light
+		
+		movAmbLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.ambient");
+		movDiffLoc =  gl.glGetUniformLocation(renderingProgram, "mvLight.diffuse");
+		movSpecLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.specular");
+		movPosLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.position");
+		
 		//  set the uniform light and material values in the shader
 		gl.glProgramUniform4fv(renderingProgram, globalAmbLoc, 1, globalAmbient, 0);
 		gl.glProgramUniform4fv(renderingProgram, ambLoc, 1, lightAmbient, 0);
@@ -526,6 +554,13 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glProgramUniform4fv(renderingProgram, mdiffLoc, 1, matDif, 0);
 		gl.glProgramUniform4fv(renderingProgram, mspecLoc, 1, matSpe, 0);
 		gl.glProgramUniform1f(renderingProgram, mshiLoc, matShi);
+		//moveable light
+		gl.glProgramUniform4fv(renderingProgram, movAmbLoc, 1, movLightAmbient, 0);
+		gl.glProgramUniform4fv(renderingProgram, movDiffLoc, 1, movLightDiffuse, 0);
+		gl.glProgramUniform4fv(renderingProgram, movSpecLoc, 1, movLightSpecular, 0);
+		gl.glProgramUniform3fv(renderingProgram, movPosLoc, 1, movLightPos, 0);
+	
+		
 	}
 
 	public static void main(String[] args) { new Starter(); }
