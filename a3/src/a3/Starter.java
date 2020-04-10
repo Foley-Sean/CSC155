@@ -198,10 +198,10 @@ public class Starter extends JFrame implements GLEventListener
 		
 		currentLightPos.set(lightLoc);
 		movCurrentLightPos.set(movLightLoc);
-		
-		lightVmat.identity().setLookAt(currentLightPos, origin, up);	// vector from light to origin
+		Vector3f totalLightPos = currentLightPos.mul( movCurrentLightPos);
+		lightVmat.identity().setLookAt(totalLightPos, origin, up);	// vector from light to origin
 		//moveable light
-		lightVmat.identity().setLookAt(movCurrentLightPos, origin, up);
+		//lightVmat.identity().setLookAt(movCurrentLightPos, origin, up);
 		
 		lightPmat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 
@@ -305,6 +305,8 @@ public class Starter extends JFrame implements GLEventListener
 		//vMat.identity().setTranslation(camera.getVMat().m03(), camera.getVMat().m13(), camera.getVMat().m23());
 		vMat.mul(camera.getVMat());
 		currentLightPos.set(lightLoc);
+		movCurrentLightPos.set(movLightLoc);
+		
 		installLights(renderingProgram2, vMat);
 
 		mMat.identity();
