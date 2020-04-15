@@ -30,7 +30,7 @@ void main(void)
 	varyingVertPos = (mv_matrix * vec4(vertPos,1.0)).xyz;
         
 	//get a vector from the vertex to the light and output it to the rasterizer for interpolation
-	varyingLightDir = mvLight.position * light.position - varyingVertPos;
+	varyingLightDir = light.position - varyingVertPos;
 
 	//get a vertex normal vector in eye space and output it to the rasterizer for interpolation
 	varyingNormal = (norm_matrix * vec4(vertNormal,1.0)).xyz;

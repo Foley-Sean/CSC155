@@ -60,11 +60,11 @@ void main(void)
 //	shadowFactor = lookup(0.0, 0.0);
 
 	vec4 shadowColor = globalAmbient * material.ambient
-				+ mvLight.ambient * light.ambient * material.ambient;
+				+ light.ambient * material.ambient;
 				//+ mvLight.ambient * material.ambient;
 	
-	vec4 lightedColor = mvLight.diffuse * light.diffuse * material.diffuse * max(dot(L,N),0.0)
-				+ mvLight.specular * light.specular * material.specular
+	vec4 lightedColor = light.diffuse * material.diffuse * max(dot(L,N),0.0)
+				+  light.specular * material.specular
 				* pow(max(dot(H,N),0.0),material.shininess*3.0);
 	
 	fragColor = vec4((shadowColor.xyz + shadowFactor*(lightedColor.xyz)),1.0);

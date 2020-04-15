@@ -2,15 +2,22 @@ package a3;
 
 import java.nio.*;
 import javax.swing.*;
+
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.lang.Math;
 import static com.jogamp.opengl.GL4.*;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.*;
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.MouseListener;
+
 import org.joml.*;
 
-public class Starter extends JFrame implements GLEventListener
+public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2;
 	private int vao[] = new int[1];
@@ -27,7 +34,7 @@ public class Starter extends JFrame implements GLEventListener
 	private Vector3f cameraLoc = new Vector3f(0.0f, 0.2f, 6.0f);
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
 	//moveable light loc
-	private Vector3f movLightLoc = new Vector3f(0.0f, 2.8f, -1.5f);
+	private Vector3f movLightLoc = new Vector3f(3.8f, -1.2f, -1.5f);
 	
 	// white light properties
 	private float[] globalAmbient = new float[] { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -91,6 +98,10 @@ public class Starter extends JFrame implements GLEventListener
 		setSize(800, 800);
 		myCanvas = new GLCanvas();
 		myCanvas.addGLEventListener(this);
+	    //mouse event listeners
+        myCanvas.addMouseWheelListener(this);
+        myCanvas.addMouseMotionListener(this);
+        
 		this.add(myCanvas);
 		this.setVisible(true);
 		
@@ -197,9 +208,9 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		
 		currentLightPos.set(lightLoc);
-		movCurrentLightPos.set(movLightLoc);
-		Vector3f totalLightPos = currentLightPos.mul( movCurrentLightPos);
-		lightVmat.identity().setLookAt(totalLightPos, origin, up);	// vector from light to origin
+		//movCurrentLightPos.set(movLightLoc);
+		//Vector3f totalLightPos = currentLightPos.mul( movCurrentLightPos);
+		lightVmat.identity().setLookAt(currentLightPos, origin, up);	// vector from light to origin
 		//moveable light
 		//lightVmat.identity().setLookAt(movCurrentLightPos, origin, up);
 		
@@ -305,7 +316,7 @@ public class Starter extends JFrame implements GLEventListener
 		//vMat.identity().setTranslation(camera.getVMat().m03(), camera.getVMat().m13(), camera.getVMat().m23());
 		vMat.mul(camera.getVMat());
 		currentLightPos.set(lightLoc);
-		movCurrentLightPos.set(movLightLoc);
+		//movCurrentLightPos.set(movLightLoc);
 		
 		installLights(renderingProgram2, vMat);
 
@@ -360,6 +371,9 @@ public class Starter extends JFrame implements GLEventListener
 		mMat.rotateY((float)Math.toRadians(40.0f));
 		
 		currentLightPos.set(lightLoc);
+		//moveable light
+		//movCurrentLightPos.set(movLightLoc);
+		
 		installLights(renderingProgram2, vMat);
 
 		mvMat.identity();
@@ -516,10 +530,10 @@ public class Starter extends JFrame implements GLEventListener
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 	
 		currentLightPos.mulPosition(vMatrix);
-		movCurrentLightPos.mulPosition(vMatrix);
+		//movCurrentLightPos.mulPosition(vMatrix);
 		
 		lightPos[0]=currentLightPos.x(); lightPos[1]=currentLightPos.y(); lightPos[2]=currentLightPos.z();
-		movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
+		//movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
 		
 		
 		// set current material values
@@ -541,10 +555,10 @@ public class Starter extends JFrame implements GLEventListener
 	
 		//moveable light
 		
-		movAmbLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.ambient");
-		movDiffLoc =  gl.glGetUniformLocation(renderingProgram, "mvLight.diffuse");
-		movSpecLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.specular");
-		movPosLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.position");
+		//movAmbLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.ambient");
+		//movDiffLoc =  gl.glGetUniformLocation(renderingProgram, "mvLight.diffuse");
+		//movSpecLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.specular");
+		//movPosLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.position");
 		
 		//  set the uniform light and material values in the shader
 		gl.glProgramUniform4fv(renderingProgram, globalAmbLoc, 1, globalAmbient, 0);
@@ -557,10 +571,10 @@ public class Starter extends JFrame implements GLEventListener
 		gl.glProgramUniform4fv(renderingProgram, mspecLoc, 1, matSpe, 0);
 		gl.glProgramUniform1f(renderingProgram, mshiLoc, matShi);
 		//moveable light
-		gl.glProgramUniform4fv(renderingProgram, movAmbLoc, 1, movLightAmbient, 0);
-		gl.glProgramUniform4fv(renderingProgram, movDiffLoc, 1, movLightDiffuse, 0);
-		gl.glProgramUniform4fv(renderingProgram, movSpecLoc, 1, movLightSpecular, 0);
-		gl.glProgramUniform3fv(renderingProgram, movPosLoc, 1, movLightPos, 0);
+		//gl.glProgramUniform4fv(renderingProgram, movAmbLoc, 1, movLightAmbient, 0);
+		//gl.glProgramUniform4fv(renderingProgram, movDiffLoc, 1, movLightDiffuse, 0);
+		//gl.glProgramUniform4fv(renderingProgram, movSpecLoc, 1, movLightSpecular, 0);
+		//gl.glProgramUniform3fv(renderingProgram, movPosLoc, 1, movLightPos, 0);
 	
 		
 	}
@@ -580,6 +594,7 @@ public class Starter extends JFrame implements GLEventListener
 	public void MoveForward() {
 		// TODO Auto-generated method stub
 		this.camera.moveForward();
+		
 	}
 
 	public void moveBackward() {
@@ -628,7 +643,142 @@ public class Starter extends JFrame implements GLEventListener
 		this.camera.pitchDown();
 		
 	}
+	
+	//mouse listeners
 
+    public void mouseMoved(MouseEvent e) {
+
+    }
+
+    public void mouseWheelMoved(MouseWheelEvent e) {
+    	//to set z light coord
+      if (e.getWheelRotation() < 0) {
+    	  lightLoc.z = (lightLoc.z + 1.5f);
+      }
+      else { 
+          lightLoc.z = (lightLoc.z - 1.5f);
+            
+         }
+        myCanvas.display();
+
+    }
+
+	@Override
+	public void mouseDragged(java.awt.event.MouseEvent arg0) {
+		// TODO Auto-generated method stub
+    	if (arg0.getX() > this.getWidth() / 2 && arg0.getX() < this.getWidth()) {
+    		lightLoc.x = (this.getWidth() / 2 + (arg0.getX() - this.getWidth()));
+    		//currentLightPos.x =  (this.getWidth() / 2 + (e.getX() - this.getWidth()));
+    	}
+    	else if (arg0.getX() > this.getWidth()){
+    		lightLoc.x = this.getWidth();
+    		//currentLightPos.x = this.getWidth();
+    	}
+    	
+    	else if(arg0.getX() < this.getWidth() /2 ) {
+    		lightLoc.x = (arg0.getX() - this.getWidth() / 2);
+    		//currentLightPos.x = (e.getX() - this.getWidth() / 2);
+    	}
+    	else {
+    		lightLoc.x = 0;
+    		//currentLightPos.x = 0;
+    	}
+    	
+    	//for y
+        if (arg0.getY() > this.getHeight() / 2 && arg0.getY() < this.getHeight()) {
+            lightLoc.y =(-(this.getHeight() / 2 + (arg0.getY() - this.getHeight())));
+        }
+        else if (arg0.getY() > this.getHeight()) { 
+        	lightLoc.y = (this.getHeight());
+        }
+        else if (arg0.getY() < this.getHeight() / 2) {
+        	lightLoc.y = (-(arg0.getY() - this.getHeight() / 2));
+        }
+        else{
+        	lightLoc.y = 0;
+        }
+        
+        //for z - since this only moves the light on the x/y axis dont alter
+        
+    	
+    	
+    	myCanvas.display();
+	}
+
+	@Override
+	public void mouseMoved(java.awt.event.MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+	
+		
+	}
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+		//movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
+		/*
+    	if (e.getX() > this.getWidth() / 2 && e.getX() < this.getWidth()) {
+    		lightLoc.x = (this.getWidth() / 2 + (e.getX() - this.getWidth()));
+    		//currentLightPos.x =  (this.getWidth() / 2 + (e.getX() - this.getWidth()));
+    	}
+    	else if (e.getX() > this.getWidth()){
+    		lightLoc.x = this.getWidth();
+    		//currentLightPos.x = this.getWidth();
+    	}
+    	
+    	else if(e.getX() < this.getWidth() /2 ) {
+    		lightLoc.x = (e.getX() - this.getWidth() / 2);
+    		//currentLightPos.x = (e.getX() - this.getWidth() / 2);
+    	}
+    	else {
+    		lightLoc.x = 0;
+    		//currentLightPos.x = 0;
+    	}
+    	//currentLightPos.x = 0;
+    	
+    	
+    	
+    	myCanvas.display();
+    	*/
+		
+	}
+	
 	/*public void displayAxes() {
 		// TODO Auto-generated method stub
 		if(this.showAxes == true) {
