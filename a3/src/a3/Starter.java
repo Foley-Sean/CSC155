@@ -29,7 +29,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[9];
+	private int vbo[] = new int[12];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -39,11 +39,17 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private int numObjVertices;
 	private ImportedModel myModel;
 	private int shuttleTexture;
+	//dolphin model
+	private ImportedModel dolphin;
+	private int numDolVertices;
+	private int dolphinTexture;
 	
-	// location of torus, shuttle, pyramid, light, and camera
+	
+	// location of torus, shuttle, mil falcon, pyramid, light, and camera
 	private Vector3f torusLoc = new Vector3f(1.6f, 0.0f, -0.3f);
 	private Vector3f pyrLoc = new Vector3f(-1.0f, 0.1f, 0.3f);
 	private Vector3f shutLoc = new Vector3f( -3.0f, 0.4f, 0.6f);
+	private Vector3f dolphinLoc = new Vector3f(4.0f, 0.6f, 1.2f);
 	private Vector3f cameraLoc = new Vector3f(0.0f, 0.2f, 6.0f);
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
 	//moveable light loc
@@ -338,7 +344,27 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
 			
+		//draw the dolphin
+		mMat.identity();
+		mMat.translate(dolphinLoc.x(), dolphinLoc.y(), dolphinLoc.z());
 		
+		shadowMVP1.identity();
+		shadowMVP1.mul(lightPmat);
+		shadowMVP1.mul(lightVmat);
+		shadowMVP1.mul(mMat);
+		
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+	
+		gl.glDrawArrays(GL_TRIANGLES, 0, numDolVertices);
 		
 	}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -521,6 +547,63 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
 		
+		//draw the dolphin
+
+		mMat.identity();
+		mMat.translate(dolphinLoc.x(), dolphinLoc.y(), dolphinLoc.z());
+
+		currentLightPos.set(lightLoc);
+		
+		installTexture(textureRenderingProgram, vMat);
+
+		gl.glUseProgram(textureRenderingProgram);
+		
+		mvLoc = gl.glGetUniformLocation(textureRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(textureRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(textureRenderingProgram, "norm_matrix");
+		sLoc = gl.glGetUniformLocation(textureRenderingProgram, "shadowMVP");
+		
+		mvMat.identity();
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		shadowMVP2.identity();
+		shadowMVP2.mul(b);
+		shadowMVP2.mul(lightPmat);
+		shadowMVP2.mul(lightVmat);
+		shadowMVP2.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+	
+		
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP2.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
+		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
+		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(2);
+		gl.glActiveTexture(GL_TEXTURE1);
+		gl.glBindTexture(GL_TEXTURE_2D, dolphinTexture);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+
+		gl.glDrawArrays(GL_TRIANGLES, 0, numDolVertices);
+		
+		//
 		//draw light location
 		currentLightPos.set(lightLoc);
 		gl.glPointSize(12);
@@ -630,6 +713,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texFragshader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
+		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
 		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
 		pMat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
@@ -735,6 +819,30 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			shuttleNvalues[i*3+2] = (float) (normals[i]).z();
 		}
 		
+		//dolphin
+		ImportedModel myDolphin = new ImportedModel("../dolphinHighPoly.obj");
+		numDolVertices = myDolphin.getNumVertices();
+		
+		Vector2f[] dTexCoords = myDolphin.getTexCoords();
+		vertices = myDolphin.getVertices();
+		normals = myDolphin.getNormals();
+		
+		float[] dolphinPvalues = new float[numDolVertices*3];
+		float[] dolphinNvalues = new float[numDolVertices*3];
+		float[] dolphinTvalues = new float[numDolVertices*2];
+		
+		for (int i=0; i<numDolVertices; i++)
+		{	dolphinPvalues[i*3]   = (float) (vertices[i]).x();
+			dolphinPvalues[i*3+1] = (float) (vertices[i]).y();
+			dolphinPvalues[i*3+2] = (float) (vertices[i]).z();
+			dolphinTvalues[i*2]   = (float) (dTexCoords[i]).x();
+			dolphinTvalues[i*2+1] = (float) (dTexCoords[i]).y();
+			dolphinNvalues[i*3]   = (float) (normals[i]).x();
+			dolphinNvalues[i*3+1] = (float) (normals[i]).y();
+			dolphinNvalues[i*3+2] = (float) (normals[i]).z();
+		}
+		
+		
 		//light as a cube
 		float[] cubePositions =
 		{	-1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
@@ -756,7 +864,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(9, vbo, 0);
+		gl.glGenBuffers(12, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -803,6 +911,22 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
 		FloatBuffer cubeBuf = Buffers.newDirectFloatBuffer(cubePositions);
 		gl.glBufferData(GL_ARRAY_BUFFER, cubeBuf.limit()*4, cubeBuf, GL_STATIC_DRAW);
+		
+		//dolphin
+		//vertices
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[9]);
+		FloatBuffer dolVertBuf = Buffers.newDirectFloatBuffer(dolphinPvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dolVertBuf.limit()*4, dolVertBuf, GL_STATIC_DRAW);
+		
+		//n coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
+		FloatBuffer dolNorBuf = Buffers.newDirectFloatBuffer(dolphinNvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dolNorBuf.limit()*4, dolNorBuf, GL_STATIC_DRAW);
+		
+		//texture coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
+		FloatBuffer dTexBuf = Buffers.newDirectFloatBuffer(dolphinTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, dTexBuf.limit()*4, dTexBuf, GL_STATIC_DRAW);
 		
 		}
 	
