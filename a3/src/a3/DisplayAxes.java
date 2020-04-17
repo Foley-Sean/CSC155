@@ -14,7 +14,7 @@ public class DisplayAxes extends AbstractAction{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		//myStarter.displayAxes();
+		myStarter.displayAxes();
 	}
 
 }

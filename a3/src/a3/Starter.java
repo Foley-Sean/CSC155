@@ -10,6 +10,7 @@ import java.lang.Math;
 
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
 import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_LINES;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
 import static com.jogamp.opengl.GL.GL_TEXTURE0;
 import static com.jogamp.opengl.GL.GL_TEXTURE_2D;
@@ -26,7 +27,7 @@ import org.joml.*;
 
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
-	private int renderingProgram1, renderingProgram2;
+	private int renderingProgram1, renderingProgram2, axesRenderingProgram;
 	private int vao[] = new int[1];
 	private int vbo[] = new int[9];
 
@@ -104,6 +105,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private Vector3f origin = new Vector3f(0.0f, 0.0f, 0.0f);
 	private Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 	private Camera camera;
+	private boolean showAxes;
 	
 	public Starter()
 	{	setTitle("Chapter8 - program 2");
@@ -335,34 +337,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDepthFunc(GL_LEQUAL);
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
-		
-		//draw light
-		/*
-		mMat.identity();
-		mMat.translate(lightLoc.x(), lightLoc.y(), lightLoc.z());
-		mMat.rotateX((float)Math.toRadians(30.0f));
-		mMat.rotateY((float)Math.toRadians(40.0f));
-		
-		shadowMVP1.identity();
-		shadowMVP1.mul(lightPmat);
-		shadowMVP1.mul(lightVmat);
-		shadowMVP1.mul(mMat);
-		
-		//sLoc = gl.glGetUniformLocation(renderingProgram1, "shadowMVP");
-		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
-		
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
-		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(0);
-		
-		gl.glEnable(GL_CULL_FACE);
-		gl.glFrontFace(GL_CCW);
-		gl.glEnable(GL_DEPTH_TEST);
-		gl.glDepthFunc(GL_LEQUAL);
-	
-		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
-		*/
-		
+			
 		
 		
 	}
@@ -540,7 +515,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		
 		//draw light location
 		currentLightPos.set(lightLoc);
-		gl.glPointSize(25);
+		gl.glPointSize(12);
 		mMat.identity();
 		mMat.translate(lightLoc.x(), lightLoc.y(), lightLoc.z());
 		//currentLightPos.set(lightLoc);
@@ -561,13 +536,37 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
         gl.glDrawArrays(GL_POINTS, 0, 1);
         gl.glPointSize(1);
 		
+        //draw axes
+        if(this.showAxes) {
+			gl.glUseProgram(axesRenderingProgram);
+			
+			mvLoc = gl.glGetUniformLocation(axesRenderingProgram, "mv_matrix");
+			projLoc = gl.glGetUniformLocation(axesRenderingProgram, "proj_matrix");
+			nLoc = gl.glGetUniformLocation(axesRenderingProgram, "norm_matrix");
+			sLoc = gl.glGetUniformLocation(axesRenderingProgram, "shadowMVP");
+			
+			mvMat.identity();
+			mvMat.mul(vMat);
+			mvMat.mul(mMat);
+			
+			mvMat.invert(invTrMat);
+			invTrMat.transpose(invTrMat);
+			
+			gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+			gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+			gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+			gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+			
+			gl.glDrawArrays(GL_LINES, 0, 12);
+		}
+        //System.out.println(showAxes);
 	}
 
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		renderingProgram1 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert1shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag1shader.glsl");
 		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag2shader.glsl");
-
+		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_fragshader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		
@@ -976,6 +975,16 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	@Override
 	public void mouseDragged(MouseEvent e) {
 
+	}
+
+	public void displayAxes() {
+		// TODO Auto-generated method stub
+		if(this.showAxes == true) {
+			this.showAxes = false;
+		}
+		else if(this.showAxes == false) {
+			this.showAxes = true;
+		}
 	}
 	
 }
