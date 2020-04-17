@@ -28,7 +28,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[20];
+	private int vbo[] = new int[9];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -255,16 +255,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glUseProgram(renderingProgram1);
 
-		//test 
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
-        //gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-       // gl.glEnableVertexAttribArray(2);
-		
-		//test 2
-		//gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[6]);
-	   // gl.glDrawElements(GL_TRIANGLES, numObjVertices, GL_UNSIGNED_INT, 0);
-        
 		// draw the torus
+		//fix light matrix as we go
+		lightVmat.identity().setLookAt(currentLightPos, origin, up);	// vector from light to origin
+		lightPmat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 		
 		mMat.identity();
 		mMat.translate(torusLoc.x(), torusLoc.y(), torusLoc.z());
@@ -301,7 +295,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		shadowMVP1.mul(lightPmat);
 		shadowMVP1.mul(lightVmat);
 		shadowMVP1.mul(mMat);
-
+		//sLoc = gl.glGetUniformLocation(renderingProgram1, "shadowMVP");
+		
 		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
@@ -327,6 +322,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		shadowMVP1.mul(lightVmat);
 		shadowMVP1.mul(mMat);
 		
+		//sLoc = gl.glGetUniformLocation(renderingProgram1, "shadowMVP");
 		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
@@ -339,6 +335,33 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDepthFunc(GL_LEQUAL);
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
+		
+		//draw light
+		/*
+		mMat.identity();
+		mMat.translate(lightLoc.x(), lightLoc.y(), lightLoc.z());
+		mMat.rotateX((float)Math.toRadians(30.0f));
+		mMat.rotateY((float)Math.toRadians(40.0f));
+		
+		shadowMVP1.identity();
+		shadowMVP1.mul(lightPmat);
+		shadowMVP1.mul(lightVmat);
+		shadowMVP1.mul(mMat);
+		
+		//sLoc = gl.glGetUniformLocation(renderingProgram1, "shadowMVP");
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+	
+		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+		*/
 		
 		
 		
@@ -367,10 +390,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		thisShi = BmatShi;
 		//original
 		vMat.identity().setTranslation(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
-		//vMat.identity().setTranslation(camera.getVMat().m03(), camera.getVMat().m13(), camera.getVMat().m23());
+		
 		vMat.mul(camera.getVMat());
+		
 		currentLightPos.set(lightLoc);
-		//movCurrentLightPos.set(movLightLoc);
 		
 		installLights(renderingProgram2, vMat);
 
@@ -462,10 +485,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 			
 		//draw the shuttle
-		//thisAmb = GmatAmb; // the shuttle is gold
-		//thisDif = GmatDif;
-		//thisSpe = GmatSpe;
-		//thisShi = GmatShi;
+		thisAmb = GmatAmb; // the shuttle is gold
+		thisDif = GmatDif;
+		thisSpe = GmatSpe;
+		thisShi = GmatShi;
 		
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
@@ -514,6 +537,29 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDepthFunc(GL_LEQUAL);
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
+		
+		//draw light location
+		currentLightPos.set(lightLoc);
+		gl.glPointSize(25);
+		mMat.identity();
+		mMat.translate(lightLoc.x(), lightLoc.y(), lightLoc.z());
+		//currentLightPos.set(lightLoc);
+		
+		installLights(renderingProgram2, vMat);
+
+		mvMat.identity();
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+		
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		
+        gl.glDrawArrays(GL_POINTS, 0, 1);
+        gl.glPointSize(1);
 		
 	}
 
@@ -628,11 +674,29 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			shuttleNvalues[i*3+1] = (float) (normals[i]).y();
 			shuttleNvalues[i*3+2] = (float) (normals[i]).z();
 		}
+		
+		//light as a cube
+		float[] cubePositions =
+		{	-1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
+			1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
+			1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,
+			-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
+			1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
+		};
+		
+		
 		// buffers definition
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(8, vbo, 0);
+		gl.glGenBuffers(9, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -673,6 +737,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
 		FloatBuffer sTexBuf = Buffers.newDirectFloatBuffer(shuttleTvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, sTexBuf.limit()*4, sTexBuf, GL_STATIC_DRAW);
+		
+		//light
+		//vertices (unused for now)
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[8]);
+		FloatBuffer cubeBuf = Buffers.newDirectFloatBuffer(cubePositions);
+		gl.glBufferData(GL_ARRAY_BUFFER, cubeBuf.limit()*4, cubeBuf, GL_STATIC_DRAW);
 		
 		}
 	
@@ -803,10 +873,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
     public void mouseWheelMoved(MouseWheelEvent e) {
     	//to set z light coord
       if (e.getWheelRotation() < 0) {
-    	  lightLoc.z = (lightLoc.z + 1.5f);
+    	  lightLoc.z = (lightLoc.z + 0.5f);
       }
       else { 
-          lightLoc.z = (lightLoc.z - 1.5f);
+          lightLoc.z = (lightLoc.z - 0.5f);
             
          }
         myCanvas.display();
@@ -816,6 +886,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	@Override
 	public void mouseDragged(java.awt.event.MouseEvent arg0) {
 		// TODO Auto-generated method stub
+		float zLoc = lightLoc.z;
     	if (arg0.getX() > this.getWidth() / 2 && arg0.getX() < this.getWidth()) {
     		lightLoc.x = (this.getWidth() / 2 + (arg0.getX() - this.getWidth()));
     		//currentLightPos.x =  (this.getWidth() / 2 + (e.getX() - this.getWidth()));
@@ -825,7 +896,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
     		//currentLightPos.x = this.getWidth();
     	}
     	
-    	else if(arg0.getX() < this.getWidth() /2 ) {
+    	else if(arg0.getX() < this.getWidth() / 2 ) {
     		lightLoc.x = (arg0.getX() - this.getWidth() / 2);
     		//currentLightPos.x = (e.getX() - this.getWidth() / 2);
     	}
@@ -849,7 +920,11 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
         }
         
         //for z - since this only moves the light on the x/y axis dont alter
-        
+        //must preserve
+        lightLoc.z = zLoc;
+        //the light zooms really fast so to scale back
+        //drastically divide location
+        lightLoc.mul(.02f, .02f, .02f);
     	
     	
     	myCanvas.display();
@@ -900,42 +975,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
-		//movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
-		/*
-    	if (e.getX() > this.getWidth() / 2 && e.getX() < this.getWidth()) {
-    		lightLoc.x = (this.getWidth() / 2 + (e.getX() - this.getWidth()));
-    		//currentLightPos.x =  (this.getWidth() / 2 + (e.getX() - this.getWidth()));
-    	}
-    	else if (e.getX() > this.getWidth()){
-    		lightLoc.x = this.getWidth();
-    		//currentLightPos.x = this.getWidth();
-    	}
-    	
-    	else if(e.getX() < this.getWidth() /2 ) {
-    		lightLoc.x = (e.getX() - this.getWidth() / 2);
-    		//currentLightPos.x = (e.getX() - this.getWidth() / 2);
-    	}
-    	else {
-    		lightLoc.x = 0;
-    		//currentLightPos.x = 0;
-    	}
-    	//currentLightPos.x = 0;
-    	
-    	
-    	
-    	myCanvas.display();
-    	*/
-		
+
 	}
 	
-	/*public void displayAxes() {
-		// TODO Auto-generated method stub
-		if(this.showAxes == true) {
-			this.showAxes = false;
-		}
-		else if(this.showAxes == false) {
-			this.showAxes = true;
-		}
-	}*/
 }

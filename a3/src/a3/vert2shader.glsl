@@ -22,7 +22,7 @@ struct Material
 
 uniform vec4 globalAmbient;
 uniform PositionalLight light;
-uniform PositionalLight mvLight;
+//uniform PositionalLight mvLight;
 uniform Material material;
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;

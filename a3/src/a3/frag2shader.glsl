@@ -63,16 +63,20 @@ void main(void)
 
 	// this would produce normal hard shadows
 //	shadowFactor = lookup(0.0, 0.0);
-
+	vec4 textureColor = texture2D(s, tc);
 	vec4 shadowColor = globalAmbient * material.ambient
 				+ light.ambient * material.ambient;
+
 				//+ mvLight.ambient * material.ambient;
 	
 	vec4 lightedColor = light.diffuse * material.diffuse * max(dot(L,N),0.0)
 				+  light.specular * material.specular
 				* pow(max(dot(H,N),0.0),material.shininess*3.0);
 	
-	vec4 textureColor = texture2D(s, tc);
-	fragColor = vec4(shadowColor.xyz + shadowFactor*(lightedColor.xyz), 1.0) + textureColor;
+	//vec4 textureColor = texture2D(s, tc);
+	fragColor = vec4(shadowColor.xyz + shadowFactor*(lightedColor.xyz), 1.0);
+
+	//in shadow test
+
 	//fragColor = fragColor + textureColor;
 }
