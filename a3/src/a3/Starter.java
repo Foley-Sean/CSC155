@@ -25,7 +25,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[5];
+	private int vbo[] = new int[20];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -82,7 +82,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private Matrix4f b = new Matrix4f();
 
 	// allocate variables for display() function
-	private FloatBuffer vals = Buffers.newDirectFloatBuffer(16); //16 
+	private FloatBuffer vals = Buffers.newDirectFloatBuffer(32); //16 
 	private Matrix4f pMat = new Matrix4f();  // perspective matrix
 	private Matrix4f vMat = new Matrix4f();  // view matrix
 	private Matrix4f mMat = new Matrix4f();  // model matrix
@@ -252,6 +252,15 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glUseProgram(renderingProgram1);
 
+		//test 
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
+        //gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+       // gl.glEnableVertexAttribArray(2);
+		
+		//test 2
+		//gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[6]);
+	   // gl.glDrawElements(GL_TRIANGLES, numObjVertices, GL_UNSIGNED_INT, 0);
+        
 		// draw the torus
 		
 		mMat.identity();
@@ -266,7 +275,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0); //def 3
 		gl.glEnableVertexAttribArray(0);	
 	
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
@@ -304,12 +313,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 		
 		//draw the shuttle
-		/*
+		
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
 		mMat.rotateX((float)Math.toRadians(30.0f));
 		mMat.rotateY((float)Math.toRadians(40.0f));
-
+		
 		shadowMVP1.identity();
 		shadowMVP1.mul(lightPmat);
 		shadowMVP1.mul(lightVmat);
@@ -320,14 +329,14 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
-
+		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDepthFunc(GL_LEQUAL);
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
-		*/
+		
 		
 		
 	}
@@ -335,6 +344,11 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	public void passTwo()
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 	
+		//test
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
+		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		//gl.glEnableVertexAttribArray(2);
+		
 		gl.glUseProgram(renderingProgram2);
 		
 		mvLoc = gl.glGetUniformLocation(renderingProgram2, "mv_matrix");
@@ -443,9 +457,13 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDepthFunc(GL_LEQUAL);
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
-		
+			
 		//draw the shuttle
-		/*
+		thisAmb = GmatAmb; // the shuttle is gold
+		thisDif = GmatDif;
+		thisSpe = GmatSpe;
+		thisShi = GmatShi;
+		
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
 		mMat.rotateX((float)Math.toRadians(30.0f));
@@ -454,7 +472,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		currentLightPos.set(lightLoc);
 		
 		installLights(renderingProgram2, vMat);
-		
+
 		mvMat.identity();
 		mvMat.mul(vMat);
 		mvMat.mul(mMat);
@@ -466,8 +484,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		shadowMVP2.mul(mMat);
 		
 		mvMat.invert(invTrMat);
-	    invTrMat.transpose(invTrMat);
-	    
+		invTrMat.transpose(invTrMat);
+		
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
 		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
 		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
@@ -476,19 +494,17 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
-
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
 		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
-
+		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDepthFunc(GL_LEQUAL);
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
-		*/
-		
 		
 	}
 
@@ -579,35 +595,28 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		}
 		
 		//shuttle definition
-		/*
-		myModel = new ImportedModel("../shuttle.obj");
-		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\a3\\src\\spstob_1.jpg");
+		ImportedModel myModel = new ImportedModel("../shuttle.obj");
 		numObjVertices = myModel.getNumVertices();
-		Vector3f[] sVertices = myModel.getVertices();
-		Vector2f[] sTexCoords = myModel.getTexCoords();
-		Vector3f[] sNormals = myModel.getNormals();
+	
+		vertices = myModel.getVertices();
+		normals = myModel.getNormals();
 		
-		float[] sPvalues = new float[numObjVertices*3];
-		float[] sTvalues = new float[numObjVertices*2];
-		float[] sNvalues = new float[numObjVertices*3];
+		float[] shuttlePvalues = new float[numObjVertices*3];
+		float[] shuttleNvalues = new float[numObjVertices*3];
 		
 		for (int i=0; i<numObjVertices; i++)
-		{	sPvalues[i*3]   = (float) (sVertices[i]).x();
-			sPvalues[i*3+1] = (float) (sVertices[i]).y();
-			sPvalues[i*3+2] = (float) (sVertices[i]).z();
-			sTvalues[i*2]   = (float) (sTexCoords[i]).x();
-			sTvalues[i*2+1] = (float) (sTexCoords[i]).y();
-			sNvalues[i*3]   = (float) (sNormals[i]).x();
-			sNvalues[i*3+1] = (float) (sNormals[i]).y();
-			sNvalues[i*3+2] = (float) (sNormals[i]).z();
+		{	shuttlePvalues[i*3]   = (float) (vertices[i]).x();
+			shuttlePvalues[i*3+1] = (float) (vertices[i]).y();
+			shuttlePvalues[i*3+2] = (float) (vertices[i]).z();
+			shuttleNvalues[i*3]   = (float) (normals[i]).x();
+			shuttleNvalues[i*3+1] = (float) (normals[i]).y();
+			shuttleNvalues[i*3+2] = (float) (normals[i]).z();
 		}
-		*/
-
 		// buffers definition
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(5, vbo, 0);
+		gl.glGenBuffers(7, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -633,20 +642,18 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		IntBuffer idxBuf = Buffers.newDirectIntBuffer(indices);
 		gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, idxBuf.limit()*4, idxBuf, GL_STATIC_DRAW);
 		
-		//shuttle norm coords in 5th buffer
-		//space shuttle buffers
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
-		//FloatBuffer sVertBuf = Buffers.newDirectFloatBuffer(sPvalues);
-		//gl.glBufferData(GL_ARRAY_BUFFER, sVertBuf.limit()*4, sVertBuf, GL_STATIC_DRAW);
-
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
-		//FloatBuffer sTexBuf = Buffers.newDirectFloatBuffer(sTvalues);
-		//gl.glBufferData(GL_ARRAY_BUFFER, sTexBuf.limit()*4, sTexBuf, GL_STATIC_DRAW);
-
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
-		//FloatBuffer sNorBuf = Buffers.newDirectFloatBuffer(sNvalues);
-		//gl.glBufferData(GL_ARRAY_BUFFER, sNorBuf.limit()*4, sNorBuf, GL_STATIC_DRAW);
-	}
+		//shuttle
+		//vertices
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
+		FloatBuffer shutVertBuf = Buffers.newDirectFloatBuffer(shuttlePvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, shutVertBuf.limit()*4, shutVertBuf, GL_STATIC_DRAW);
+		
+		//n coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
+		FloatBuffer shutNorBuf = Buffers.newDirectFloatBuffer(shuttleNvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, shutNorBuf.limit()*4, shutNorBuf, GL_STATIC_DRAW);
+		
+		}
 	
 	private void installLights(int renderingProgram, Matrix4f vMatrix)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
