@@ -27,7 +27,7 @@ import org.joml.*;
 
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
-	private int renderingProgram1, renderingProgram2, axesRenderingProgram;
+	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram;
 	private int vao[] = new int[1];
 	private int vbo[] = new int[9];
 
@@ -460,10 +460,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 			
 		//draw the shuttle
-		thisAmb = GmatAmb; // the shuttle is gold
-		thisDif = GmatDif;
-		thisSpe = GmatSpe;
-		thisShi = GmatShi;
+		//thisAmb = GmatAmb; // the shuttle is gold
+		//thisDif = GmatDif;
+		//thisSpe = GmatSpe;
+		//thisShi = .5f;
 		
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
@@ -472,8 +472,15 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		
 		currentLightPos.set(lightLoc);
 		
-		installLights(renderingProgram2, vMat);
+		installTexture(textureRenderingProgram, vMat);
 
+		gl.glUseProgram(textureRenderingProgram);
+		
+		mvLoc = gl.glGetUniformLocation(textureRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(textureRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(textureRenderingProgram, "norm_matrix");
+		sLoc = gl.glGetUniformLocation(textureRenderingProgram, "shadowMVP");
+		
 		mvMat.identity();
 		mvMat.mul(vMat);
 		mvMat.mul(mMat);
@@ -486,6 +493,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		
 		mvMat.invert(invTrMat);
 		invTrMat.transpose(invTrMat);
+	
 		
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
 		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
@@ -562,11 +570,64 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
         //System.out.println(showAxes);
 	}
 
+	private void installTexture(int renderingProgram, Matrix4f vMatrix) {
+	// TODO Auto-generated method stub
+		GL4 gl = (GL4) GLContext.getCurrentGL();
+		
+		currentLightPos.mulPosition(vMatrix);
+		//movCurrentLightPos.mulPosition(vMatrix);
+		
+		lightPos[0]=currentLightPos.x(); lightPos[1]=currentLightPos.y(); lightPos[2]=currentLightPos.z();
+		//movLightPos[0]= movCurrentLightPos.x(); movLightPos[1]= movCurrentLightPos.y(); movLightPos[2]= movCurrentLightPos.z();
+		
+		
+		// set current material values
+		matAmb = thisAmb;
+		matDif = thisDif;
+		matSpe = thisSpe;
+		matShi = .5f;
+		
+		// get the locations of the light and material fields in the shader
+		globalAmbLoc = gl.glGetUniformLocation(renderingProgram, "globalAmbient");
+		ambLoc = gl.glGetUniformLocation(renderingProgram, "light.ambient");
+		diffLoc = gl.glGetUniformLocation(renderingProgram, "light.diffuse");
+		specLoc = gl.glGetUniformLocation(renderingProgram, "light.specular");
+		posLoc = gl.glGetUniformLocation(renderingProgram, "light.position");
+		//mambLoc = gl.glGetUniformLocation(renderingProgram, "material.ambient");
+		//mdiffLoc = gl.glGetUniformLocation(renderingProgram, "material.diffuse");
+		//mspecLoc = gl.glGetUniformLocation(renderingProgram, "material.specular");
+		mshiLoc = gl.glGetUniformLocation(renderingProgram, "material.shininess");
+	
+		//moveable light
+		
+		//movAmbLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.ambient");
+		//movDiffLoc =  gl.glGetUniformLocation(renderingProgram, "mvLight.diffuse");
+		//movSpecLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.specular");
+		//movPosLoc = gl.glGetUniformLocation(renderingProgram, "mvLight.position");
+		
+		//  set the uniform light and material values in the shader
+		gl.glProgramUniform4fv(renderingProgram, globalAmbLoc, 1, globalAmbient, 0);
+		gl.glProgramUniform4fv(renderingProgram, ambLoc, 1, lightAmbient, 0);
+		gl.glProgramUniform4fv(renderingProgram, diffLoc, 1, lightDiffuse, 0);
+		gl.glProgramUniform4fv(renderingProgram, specLoc, 1, lightSpecular, 0);
+		gl.glProgramUniform3fv(renderingProgram, posLoc, 1, lightPos, 0);
+		gl.glProgramUniform4fv(renderingProgram, mambLoc, 1, matAmb, 0);
+		gl.glProgramUniform4fv(renderingProgram, mdiffLoc, 1, matDif, 0);
+		gl.glProgramUniform4fv(renderingProgram, mspecLoc, 1, matSpe, 0);
+		gl.glProgramUniform1f(renderingProgram, mshiLoc, matShi);
+		//moveable light
+		//gl.glProgramUniform4fv(renderingProgram, movAmbLoc, 1, movLightAmbient, 0);
+		//gl.glProgramUniform4fv(renderingProgram, movDiffLoc, 1, movLightDiffuse, 0);
+		//gl.glProgramUniform4fv(renderingProgram, movSpecLoc, 1, movLightSpecular, 0);
+		//gl.glProgramUniform3fv(renderingProgram, movPosLoc, 1, movLightPos, 0);
+}
+
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 		renderingProgram1 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert1shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag1shader.glsl");
 		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag2shader.glsl");
 		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_fragshader.glsl");
+		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texFragshader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		
