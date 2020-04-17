@@ -9,7 +9,10 @@ import java.awt.event.MouseWheelListener;
 import java.lang.Math;
 
 import static com.jogamp.opengl.GL.GL_ARRAY_BUFFER;
+import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_STATIC_DRAW;
+import static com.jogamp.opengl.GL.GL_TEXTURE0;
+import static com.jogamp.opengl.GL.GL_TEXTURE_2D;
 import static com.jogamp.opengl.GL4.*;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -459,10 +462,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 			
 		//draw the shuttle
-		thisAmb = GmatAmb; // the shuttle is gold
-		thisDif = GmatDif;
-		thisSpe = GmatSpe;
-		thisShi = GmatShi;
+		//thisAmb = GmatAmb; // the shuttle is gold
+		//thisDif = GmatDif;
+		//thisSpe = GmatSpe;
+		//thisShi = GmatShi;
 		
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
@@ -499,6 +502,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
 		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
+		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(2);
+		gl.glActiveTexture(GL_TEXTURE1);
+		gl.glBindTexture(GL_TEXTURE_2D, shuttleTexture);
+		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
 		gl.glEnable(GL_DEPTH_TEST);
@@ -513,6 +522,9 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		renderingProgram1 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert1shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag1shader.glsl");
 		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag2shader.glsl");
 
+		//shuttle texture
+		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
+		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
 		pMat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
 
@@ -597,17 +609,21 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		//shuttle definition
 		ImportedModel myModel = new ImportedModel("../shuttle.obj");
 		numObjVertices = myModel.getNumVertices();
-	
+		
+		Vector2f[] texCoords = myModel.getTexCoords();
 		vertices = myModel.getVertices();
 		normals = myModel.getNormals();
 		
 		float[] shuttlePvalues = new float[numObjVertices*3];
 		float[] shuttleNvalues = new float[numObjVertices*3];
+		float[] shuttleTvalues = new float[numObjVertices*2];
 		
 		for (int i=0; i<numObjVertices; i++)
 		{	shuttlePvalues[i*3]   = (float) (vertices[i]).x();
 			shuttlePvalues[i*3+1] = (float) (vertices[i]).y();
 			shuttlePvalues[i*3+2] = (float) (vertices[i]).z();
+			shuttleTvalues[i*2]   = (float) (texCoords[i]).x();
+			shuttleTvalues[i*2+1] = (float) (texCoords[i]).y();
 			shuttleNvalues[i*3]   = (float) (normals[i]).x();
 			shuttleNvalues[i*3+1] = (float) (normals[i]).y();
 			shuttleNvalues[i*3+2] = (float) (normals[i]).z();
@@ -616,7 +632,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(7, vbo, 0);
+		gl.glGenBuffers(8, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -652,6 +668,11 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
 		FloatBuffer shutNorBuf = Buffers.newDirectFloatBuffer(shuttleNvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, shutNorBuf.limit()*4, shutNorBuf, GL_STATIC_DRAW);
+		
+		//texture coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
+		FloatBuffer sTexBuf = Buffers.newDirectFloatBuffer(shuttleTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, sTexBuf.limit()*4, sTexBuf, GL_STATIC_DRAW);
 		
 		}
 	
