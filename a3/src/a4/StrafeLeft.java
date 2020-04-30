@@ -1,20 +1,21 @@
-package a3;
+package a4;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-public class PitchUp extends AbstractAction {
-
+public class StrafeLeft extends AbstractAction {
+	
 	private Starter myStarter;
-	public PitchUp(Starter starter) {
+	public StrafeLeft(Starter starter) {
 		// TODO Auto-generated constructor stub
 		myStarter = starter;
 	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		myStarter.pitchUp();
+		myStarter.strafeLeft();
 	}
 
 }

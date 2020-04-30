@@ -1,20 +1,22 @@
-package a3;
+package a4;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-public class MoveForward extends AbstractAction {
+public class MoveBackward extends AbstractAction {
 
 	private Starter myStarter;
 	
-	public MoveForward(Starter starter) {
+	public MoveBackward(Starter starter) {
 		myStarter = starter;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		myStarter.MoveForward();
+		myStarter.moveBackward();
 	}
+	
+	
 }

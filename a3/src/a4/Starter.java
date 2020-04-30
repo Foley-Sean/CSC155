@@ -1,4 +1,4 @@
-package a3;
+package a4;
 
 import java.nio.*;
 import javax.swing.*;
@@ -707,10 +707,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 	public void init(GLAutoDrawable drawable)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
-		renderingProgram1 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert1shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag1shader.glsl");
-		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\frag2shader.glsl");
-		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\axes_fragshader.glsl");
-		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a3\\texFragshader.glsl");
+		renderingProgram1 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vert1shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\frag1shader.glsl");
+		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\frag2shader.glsl");
+		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_fragshader.glsl");
+		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texFragshader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");

@@ -1,13 +1,14 @@
-package a3;
+package a4;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-public class StrafeLeft extends AbstractAction {
-	
+public class StrafeRight extends AbstractAction {
+
 	private Starter myStarter;
-	public StrafeLeft(Starter starter) {
+	
+	public StrafeRight(Starter starter) {
 		// TODO Auto-generated constructor stub
 		myStarter = starter;
 	}
@@ -15,7 +16,7 @@ public class StrafeLeft extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		myStarter.strafeLeft();
+		myStarter.strafeRight();
 	}
 
 }

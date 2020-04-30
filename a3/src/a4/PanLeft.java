@@ -1,20 +1,20 @@
-package a3;
+package a4;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-public class MoveUp extends AbstractAction {
+public class PanLeft extends AbstractAction {
 
 	private Starter myStarter;
-	public MoveUp(Starter starter) {
+	public PanLeft(Starter starter) {
 		// TODO Auto-generated constructor stub
 		myStarter = starter;
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		myStarter.moveUp();
+		myStarter.panLeft();
 	}
 
 }
