@@ -27,9 +27,9 @@ import org.joml.*;
 
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
-	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram;
+	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram, skyboxRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[12];
+	private int vbo[] = new int[13];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -44,6 +44,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private int numDolVertices;
 	private int dolphinTexture;
 	
+	//skybox
+	private int skyboxTexture;
 	
 	// location of torus, shuttle, mil falcon, pyramid, light, and camera
 	private Vector3f torusLoc = new Vector3f(1.6f, 0.0f, -0.3f);
@@ -253,6 +255,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glActiveTexture(GL_TEXTURE0);
 		gl.glBindTexture(GL_TEXTURE_2D, shadowTex[0]);
 	
+		//draw skybox
+		//skyBoxPass();
 		gl.glDrawBuffer(GL_FRONT);
 		
 		passTwo();
@@ -652,6 +656,48 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		}
         //System.out.println(showAxes);
 	}
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	private void skyBoxPass() {
+		/*
+		GL4 gl = (GL4) GLContext.getCurrentGL();
+		
+		gl.glUseProgram(skyboxRenderingProgram);
+		
+		mvLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "norm_matrix");
+		sLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "shadowMVP");
+		
+		mvMat.identity();
+		mMat.translate(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
+		
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+		
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+		gl.glVertexAttribPointer(0, 1, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);	     // cube is CW, but we are viewing the inside
+		gl.glDisable(GL_DEPTH_TEST);
+		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
+		gl.glEnable(GL_DEPTH_TEST);
+		*/
+		
+		
+	}
 
 	private void installTexture(int renderingProgram, Matrix4f vMatrix) {
 	// TODO Auto-generated method stub
@@ -711,9 +757,14 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\frag2shader.glsl");
 		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_fragshader.glsl");
 		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texFragshader.glsl");
+		//skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
+		
+		//skybox
+		skyboxTexture = Utils.loadCubeMap("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\cubeMap");
+		gl.glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		
 		aspect = (float) myCanvas.getWidth() / (float) myCanvas.getHeight();
 		pMat.identity().setPerspective((float) Math.toRadians(60.0f), aspect, 0.1f, 1000.0f);
@@ -859,12 +910,28 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
 		};
 		
+		//skybox as a cube
+		float[] cubeVertexPositions =
+			{	-1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
+				1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
+				1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,
+				1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,
+				-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
+				1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
+			};
+		
 		
 		// buffers definition
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(12, vbo, 0);
+		gl.glGenBuffers(13, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -927,6 +994,11 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
 		FloatBuffer dTexBuf = Buffers.newDirectFloatBuffer(dolphinTvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, dTexBuf.limit()*4, dTexBuf, GL_STATIC_DRAW);
+		
+		//skybox
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+		//FloatBuffer cvertBuf = Buffers.newDirectFloatBuffer(cubeVertexPositions);
+		//gl.glBufferData(GL_ARRAY_BUFFER, cvertBuf.limit()*4, cvertBuf, GL_STATIC_DRAW);
 		
 		}
 	
