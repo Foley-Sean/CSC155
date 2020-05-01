@@ -29,7 +29,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram, skyboxRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[13];
+	private int vbo[] = new int[15];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -246,7 +246,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glEnable(GL_POLYGON_OFFSET_FILL);	//  for reducing
 		gl.glPolygonOffset(3.0f, 5.0f);		//  shadow artifacts
 		//camera
-		
+		//skyBoxPass();
 		passOne();
 		
 		gl.glDisable(GL_POLYGON_OFFSET_FILL);	// artifact reduction, continued
@@ -256,7 +256,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindTexture(GL_TEXTURE_2D, shadowTex[0]);
 	
 		//draw skybox
-		//skyBoxPass();
+		skyBoxPass();
 		gl.glDrawBuffer(GL_FRONT);
 		
 		passTwo();
@@ -658,16 +658,14 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	private void skyBoxPass() {
-		/*
+		
 		GL4 gl = (GL4) GLContext.getCurrentGL();
 		
 		gl.glUseProgram(skyboxRenderingProgram);
 		
-		mvLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "mv_matrix");
+		mvLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "v_matrix");
 		projLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "proj_matrix");
-		nLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "norm_matrix");
-		sLoc = gl.glGetUniformLocation(skyboxRenderingProgram, "shadowMVP");
-		
+		//vMat =  gl.glGetUniformLocation(skyboxRenderingProgram, "v_matrix");
 		mvMat.identity();
 		mMat.translate(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
 		
@@ -680,10 +678,9 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
 		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
 		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
-		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
 		
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
-		gl.glVertexAttribPointer(0, 1, GL_FLOAT, false, 0, 0);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 		
 		gl.glActiveTexture(GL_TEXTURE0);
@@ -694,7 +691,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDisable(GL_DEPTH_TEST);
 		gl.glDrawArrays(GL_TRIANGLES, 0, 36);
 		gl.glEnable(GL_DEPTH_TEST);
-		*/
+		
 		
 		
 	}
@@ -757,7 +754,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		renderingProgram2 = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vert2shader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\frag2shader.glsl");
 		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_fragshader.glsl");
 		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texFragshader.glsl");
-		//skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
+		skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
@@ -931,7 +928,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(13, vbo, 0);
+		gl.glGenBuffers(15, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -996,9 +993,9 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBufferData(GL_ARRAY_BUFFER, dTexBuf.limit()*4, dTexBuf, GL_STATIC_DRAW);
 		
 		//skybox
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
-		//FloatBuffer cvertBuf = Buffers.newDirectFloatBuffer(cubeVertexPositions);
-		//gl.glBufferData(GL_ARRAY_BUFFER, cvertBuf.limit()*4, cvertBuf, GL_STATIC_DRAW);
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[12]);
+		FloatBuffer cvertBuf = Buffers.newDirectFloatBuffer(cubeVertexPositions);
+		gl.glBufferData(GL_ARRAY_BUFFER, cvertBuf.limit()*4, cvertBuf, GL_STATIC_DRAW);
 		
 		}
 	
