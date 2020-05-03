@@ -27,7 +27,7 @@ import org.joml.*;
 
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
-	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram, skyboxRenderingProgram;
+	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram;
 	private int vao[] = new int[1];
 	private int vbo[] = new int[15];
 
@@ -48,7 +48,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private int skyboxTexture;
 	
 	// location of torus, shuttle, mil falcon, pyramid, light, and camera
-	private Vector3f torusLoc = new Vector3f(1.6f, 0.0f, -0.3f);
+	private Vector3f torusLoc = new Vector3f(1.6f, 4.0f, -0.3f);
 	private Vector3f pyrLoc = new Vector3f(-1.0f, 0.1f, 0.3f);
 	private Vector3f shutLoc = new Vector3f( -3.0f, 0.4f, 0.6f);
 	private Vector3f dolphinLoc = new Vector3f(4.0f, 0.6f, 1.2f);
@@ -380,28 +380,33 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
 		//gl.glEnableVertexAttribArray(2);
 		
-		gl.glUseProgram(renderingProgram2);
-		
-		mvLoc = gl.glGetUniformLocation(renderingProgram2, "mv_matrix");
-		projLoc = gl.glGetUniformLocation(renderingProgram2, "proj_matrix");
-		nLoc = gl.glGetUniformLocation(renderingProgram2, "norm_matrix");
-		sLoc = gl.glGetUniformLocation(renderingProgram2, "shadowMVP");
+		//gl.glUseProgram(renderingProgram2);
+	    //installTexture(envRenderingProgram, vMat);
+		gl.glUseProgram(envRenderingProgram);
+		//installTexture(envRenderingProgram, vMat);
+		mvLoc = gl.glGetUniformLocation(envRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(envRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(envRenderingProgram, "norm_matrix");
+		sLoc = gl.glGetUniformLocation(envRenderingProgram, "shadowMVP");
 
 		// draw the torus
-			
-		thisAmb = BmatAmb; // the torus is bronze
-		thisDif = BmatDif;
-		thisSpe = BmatSpe;
-		thisShi = BmatShi;
-		//original
+		//installTexture(envRenderingProgram, vMat);
+		//thisAmb = BmatAmb; // the torus is bronze
+		//thisDif = BmatDif;
+	   // thisSpe = BmatSpe;
+		//thisShi = BmatShi;
+		////original
 		vMat.identity().setTranslation(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
 		
 		vMat.mul(camera.getVMat());
 		
 		currentLightPos.set(lightLoc);
 		
-		installLights(renderingProgram2, vMat);
-
+		//installLights(renderingProgram2, vMat);
+		//test
+		installLights(envRenderingProgram, vMat);
+		//installTexture(envRenderingProgram, vMat);
+		
 		mMat.identity();
 		mMat.translate(torusLoc.x(), torusLoc.y(), torusLoc.z());
 		mMat.rotateX((float)Math.toRadians(25.0f));
@@ -423,13 +428,22 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
 		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP2.get(vals));
 
+		//vertex
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
-
+		
+		//normals
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(1);	
+		gl.glEnableVertexAttribArray(1);
+		
+		//textures
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(2);
+		gl.glActiveTexture(GL_TEXTURE1);
+		gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 	
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
 		gl.glEnable(GL_CULL_FACE);
@@ -437,11 +451,19 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glEnable(GL_DEPTH_TEST);
 		gl.glDepthFunc(GL_LEQUAL);
 	
+		//indices
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
+		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
 		gl.glDrawElements(GL_TRIANGLES, numTorusIndices, GL_UNSIGNED_INT, 0);
 
 		// draw the pyramid
 		
+		gl.glUseProgram(renderingProgram2);
+		mvLoc = gl.glGetUniformLocation(renderingProgram2, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(renderingProgram2, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(renderingProgram2, "norm_matrix");
+		sLoc = gl.glGetUniformLocation(renderingProgram2, "shadowMVP");
 		thisAmb = GmatAmb; // the pyramid is gold
 		thisDif = GmatDif;
 		thisSpe = GmatSpe;
@@ -541,8 +563,11 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[7]);
 		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(2);
+		
 		gl.glActiveTexture(GL_TEXTURE1);
 		gl.glBindTexture(GL_TEXTURE_2D, shuttleTexture);
+		//gl.glActiveTexture(GL_TEXTURE0);
+		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
@@ -561,6 +586,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		installTexture(textureRenderingProgram, vMat);
 
 		gl.glUseProgram(textureRenderingProgram);
+		//gl.glUseProgram(skyboxRenderingProgram);
+		//gl.glUseProgram(renderingProgram2);
 		
 		mvLoc = gl.glGetUniformLocation(textureRenderingProgram, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(textureRenderingProgram, "proj_matrix");
@@ -597,8 +624,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
 		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(2);
+		
+		//gl.glUseProgram(skyboxRenderingProgram);
 		gl.glActiveTexture(GL_TEXTURE1);
 		gl.glBindTexture(GL_TEXTURE_2D, dolphinTexture);
+		//gl.glActiveTexture(GL_TEXTURE1);
+		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
@@ -683,7 +714,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 		
-		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glActiveTexture(GL_TEXTURE1);
 		gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 
 		gl.glEnable(GL_CULL_FACE);
@@ -755,6 +786,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		axesRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_vertshader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\axes_fragshader.glsl");
 		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texFragshader.glsl");
 		skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
+		envRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emFragShader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
@@ -828,17 +860,22 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		myTorus = new Torus(0.6f, 0.4f, 96); //def 48
 		numTorusVertices = myTorus.getNumVertices();
 		numTorusIndices = myTorus.getNumIndices();
+		Vector2f[] torusTexCoords = myTorus.getTexCoords();
+		
 		vertices = myTorus.getVertices();
 		normals = myTorus.getNormals();
 		int[] indices = myTorus.getIndices();
 		
 		float[] torusPvalues = new float[vertices.length*3];
 		float[] torusNvalues = new float[normals.length*3];
+		float[] torusTvalues = new float[torusTexCoords.length*2];
 
 		for (int i=0; i<numTorusVertices; i++)
 		{	torusPvalues[i*3]   = (float) vertices[i].x();
 			torusPvalues[i*3+1] = (float) vertices[i].y();
 			torusPvalues[i*3+2] = (float) vertices[i].z();
+			torusTvalues[i*2]   = (float) torusTexCoords[i].x();
+			torusTvalues[i*2+1] = (float) torusTexCoords[i].y();
 			torusNvalues[i*3]   = (float) normals[i].x();
 			torusNvalues[i*3+1] = (float) normals[i].y();
 			torusNvalues[i*3+2] = (float) normals[i].z();
@@ -944,6 +981,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 		FloatBuffer torusNorBuf = Buffers.newDirectFloatBuffer(torusNvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, torusNorBuf.limit()*4, torusNorBuf, GL_STATIC_DRAW);
+		
+		//torus t values
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+		FloatBuffer torTexBuf = Buffers.newDirectFloatBuffer(torusTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, torTexBuf.limit()*4, torTexBuf, GL_STATIC_DRAW);
 		
 		// load the pyramid normal coordinates into the fourth buffer
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
