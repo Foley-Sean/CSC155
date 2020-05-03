@@ -393,7 +393,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		//installTexture(envRenderingProgram, vMat);
 		//thisAmb = BmatAmb; // the torus is bronze
 		//thisDif = BmatDif;
-	   // thisSpe = BmatSpe;
+	    //thisSpe = BmatSpe;
 		//thisShi = BmatShi;
 		////original
 		vMat.identity().setTranslation(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
@@ -439,10 +439,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glEnableVertexAttribArray(1);
 		
 		//textures
-		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
-		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-		gl.glEnableVertexAttribArray(2);
-		gl.glActiveTexture(GL_TEXTURE1);
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
+		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		//gl.glEnableVertexAttribArray(2);
+		gl.glActiveTexture(GL_TEXTURE0);
 		gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 	
 		gl.glClear(GL_DEPTH_BUFFER_BIT);
