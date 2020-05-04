@@ -27,14 +27,16 @@ import org.joml.*;
 
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
-	private int renderingProgram1, renderingProgram2, axesRenderingProgram, textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram;
+	private int renderingProgram1, renderingProgram2, axesRenderingProgram, 
+	textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram, geoRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[15];
+	private int vbo[] = new int[18];
 
 	// model stuff
 	private ImportedModel pyramid;
 	private Torus myTorus;
-	private int numPyramidVertices, numTorusVertices, numTorusIndices;
+	private Sphere mySphere;
+	private int numPyramidVertices, numTorusVertices, numTorusIndices, numSphereVerts;
 	//shuttle model
 	private int numObjVertices;
 	private ImportedModel myModel;
@@ -47,13 +49,14 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	//skybox
 	private int skyboxTexture;
 	
-	// location of torus, shuttle, mil falcon, pyramid, light, and camera
+	// location of torus, shuttle, mil falcon, pyramid, light, sphere and camera
 	private Vector3f torusLoc = new Vector3f(1.6f, 4.0f, -0.3f);
 	private Vector3f pyrLoc = new Vector3f(-1.0f, 0.1f, 0.3f);
 	private Vector3f shutLoc = new Vector3f( -3.0f, 0.4f, 0.6f);
 	private Vector3f dolphinLoc = new Vector3f(4.0f, 0.6f, 1.2f);
 	private Vector3f cameraLoc = new Vector3f(0.0f, 0.2f, 6.0f);
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
+	private Vector3f sphereLoc = new Vector3f(-5.0f, -2.0f, -1.0f);
 	//moveable light loc
 	private Vector3f movLightLoc = new Vector3f(3.8f, -1.2f, -1.5f);
 	
@@ -322,8 +325,33 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 		
-		//draw the shuttle
+		//draw the sphere
+		gl.glUseProgram(geoRenderingProgram);
+		//gl.glUseProgram(renderingProgram1);
+		mMat.identity();
+		mMat.translate(sphereLoc.x(), sphereLoc.y(), sphereLoc.z());
+		mMat.rotateX((float)Math.toRadians(30.0f));
+		mMat.rotateY((float)Math.toRadians(40.0f));
+
+		//shadowMVP1.identity();
+		//shadowMVP1.mul(lightPmat);
+		//shadowMVP1.mul(lightVmat);
+		//shadowMVP1.mul(mMat);
+		//gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
 		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+	
+		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
+		
+		//draw the shuttle
+		gl.glUseProgram(renderingProgram1);
 		mMat.identity();
 		mMat.translate(shutLoc.x(), shutLoc.y(), shutLoc.z());
 		mMat.rotateX((float)Math.toRadians(30.0f));
@@ -438,10 +466,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
 		
-		//textures
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[13]);
-		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-		//gl.glEnableVertexAttribArray(2);
 		gl.glActiveTexture(GL_TEXTURE0);
 		gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 	
@@ -460,6 +484,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		// draw the pyramid
 		
 		gl.glUseProgram(renderingProgram2);
+		//gl.glUseProgram(geoRenderingProgram);
 		mvLoc = gl.glGetUniformLocation(renderingProgram2, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(renderingProgram2, "proj_matrix");
 		nLoc = gl.glGetUniformLocation(renderingProgram2, "norm_matrix");
@@ -510,7 +535,61 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDepthFunc(GL_LEQUAL);
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
-			
+		
+		//draw the sphere
+		gl.glUseProgram(geoRenderingProgram);
+		//gl.glUseProgram(renderingProgram2);
+		mvLoc = gl.glGetUniformLocation(geoRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(geoRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(geoRenderingProgram, "norm_matrix");
+		//sLoc = gl.glGetUniformLocation(geoRenderingProgram, "shadowMVP");
+		thisAmb = GmatAmb; // the sphere is gold
+		thisDif = GmatDif;
+		thisSpe = GmatSpe;
+		thisShi = GmatShi;
+		
+		mMat.identity();
+		mMat.translate(sphereLoc.x(), sphereLoc.y(), sphereLoc.z());
+		mMat.rotateX((float)Math.toRadians(30.0f));
+		mMat.rotateY((float)Math.toRadians(40.0f));
+		
+		currentLightPos.set(lightLoc);
+		
+		installLights(geoRenderingProgram, vMat);
+
+		mvMat.identity();
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		//shadowMVP2.identity();
+		//shadowMVP2.mul(b);
+		//shadowMVP2.mul(lightPmat);
+		//shadowMVP2.mul(lightVmat);
+		//shadowMVP2.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		//gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP2.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[16]);
+		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+
+		gl.glDrawArrays(GL_TRIANGLES, 0, numSphereVerts);
+		
 		//draw the shuttle
 		//thisAmb = GmatAmb; // the shuttle is gold
 		//thisDif = GmatDif;
@@ -787,6 +866,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		textureRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\texFragshader.glsl");
 		skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
 		envRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emFragShader.glsl");
+		geoRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\geomShader.glsl","C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\fragShader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
@@ -881,6 +961,30 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			torusNvalues[i*3+2] = (float) normals[i].z();
 		}
 		
+		//sphere definition
+		mySphere = new Sphere(96);
+		numSphereVerts = mySphere.getIndices().length;
+	
+		int[] sphereIndices = mySphere.getIndices();
+		Vector3f[] vert = mySphere.getVertices();
+		Vector2f[] tex  = mySphere.getTexCoords();
+		Vector3f[] norm = mySphere.getNormals();
+		
+		float[] pvalues = new float[sphereIndices.length*3];
+		float[] tvalues = new float[sphereIndices.length*2];
+		float[] nvalues = new float[sphereIndices.length*3];
+		
+		for (int i=0; i<sphereIndices.length; i++)
+		{	pvalues[i*3] = (float) (vert[sphereIndices[i]]).x;
+			pvalues[i*3+1] = (float) (vert[sphereIndices[i]]).y;
+			pvalues[i*3+2] = (float) (vert[sphereIndices[i]]).z;
+			tvalues[i*2] = (float) (tex[sphereIndices[i]]).x;
+			tvalues[i*2+1] = (float) (tex[sphereIndices[i]]).y;
+			nvalues[i*3] = (float) (norm[sphereIndices[i]]).x;
+			nvalues[i*3+1]= (float)(norm[sphereIndices[i]]).y;
+			nvalues[i*3+2]=(float) (norm[sphereIndices[i]]).z;
+		}
+		
 		//shuttle definition
 		ImportedModel myModel = new ImportedModel("../shuttle.obj");
 		numObjVertices = myModel.getNumVertices();
@@ -965,7 +1069,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(15, vbo, 0);
+		gl.glGenBuffers(18, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -1040,6 +1144,18 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		FloatBuffer cvertBuf = Buffers.newDirectFloatBuffer(cubeVertexPositions);
 		gl.glBufferData(GL_ARRAY_BUFFER, cvertBuf.limit()*4, cvertBuf, GL_STATIC_DRAW);
 		
+		//sphere
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[14]);
+		FloatBuffer spVertBuf = Buffers.newDirectFloatBuffer(pvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, spVertBuf.limit()*4, spVertBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[15]);
+		FloatBuffer spTexBuf = Buffers.newDirectFloatBuffer(tvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, spTexBuf.limit()*4, spTexBuf, GL_STATIC_DRAW);
+
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[16]);
+		FloatBuffer spNorBuf = Buffers.newDirectFloatBuffer(nvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, spNorBuf.limit()*4,spNorBuf, GL_STATIC_DRAW);
 		}
 	
 	private void installLights(int renderingProgram, Matrix4f vMatrix)
