@@ -29,15 +29,17 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2, axesRenderingProgram, 
 	textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram,
-	geoRenderingProgram, texture3dRenderingProgram;
+	geoRenderingProgram, texture3dRenderingProgram, bumpRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[20];
+	private int vbo[] = new int[24];
 
 	// model stuff
 	private ImportedModel pyramid;
 	private Torus myTorus;
+	private Torus myBumpTorus;
 	private Sphere mySphere;
-	private int numPyramidVertices, numTorusVertices, numTorusIndices, numSphereVerts;
+	private int numPyramidVertices, numTorusVertices,
+	numTorusIndices, numSphereVerts, numBumpTorusVerts, numBumpTorusIndices;
 	//shuttle model
 	private int numObjVertices;
 	private ImportedModel myModel;
@@ -66,6 +68,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
 	private Vector3f sphereLoc = new Vector3f(-5.0f, -2.0f, -1.0f);
 	private Vector3f dolphin3dLoc = new Vector3f(4.5f, 0.6f, 1.2f);
+	private Vector3f bumpTorusLoc = new Vector3f(-1.6f, 4.0f, -0.3f);
 	//moveable light loc
 	private Vector3f movLightLoc = new Vector3f(3.8f, -1.2f, -1.5f);
 	
@@ -336,7 +339,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		
 		//draw the sphere
 		gl.glUseProgram(geoRenderingProgram);
-		//gl.glUseProgram(renderingProgram1);
 		mMat.identity();
 		mMat.translate(sphereLoc.x(), sphereLoc.y(), sphereLoc.z());
 		mMat.rotateX((float)Math.toRadians(30.0f));
@@ -430,21 +432,38 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, num3dDolVertices);
 		
+		//draw bump mapped torus
+		gl.glUseProgram(bumpRenderingProgram);
+		mMat.identity();
+		mMat.translate(bumpTorusLoc.x(), bumpTorusLoc.y(), bumpTorusLoc.z());
+		
+		shadowMVP1.identity();
+		shadowMVP1.mul(lightPmat);
+		shadowMVP1.mul(lightVmat);
+		shadowMVP1.mul(mMat);
+		//sLoc = gl.glGetUniformLocation(bumpRenderingProgram, "shadowMVP");
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[20]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);	
+	
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+
+		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[23]);
+		gl.glDrawElements(GL_TRIANGLES, numBumpTorusIndices, GL_UNSIGNED_INT, 0);
+		
 		
 	}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	public void passTwo()
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
 	
-		//test
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
-		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-		//gl.glEnableVertexAttribArray(2);
-		
-		//gl.glUseProgram(renderingProgram2);
-	    //installTexture(envRenderingProgram, vMat);
+
 		gl.glUseProgram(envRenderingProgram);
-		//installTexture(envRenderingProgram, vMat);
 		mvLoc = gl.glGetUniformLocation(envRenderingProgram, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(envRenderingProgram, "proj_matrix");
 		nLoc = gl.glGetUniformLocation(envRenderingProgram, "norm_matrix");
@@ -456,17 +475,13 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		//thisDif = BmatDif;
 	    //thisSpe = BmatSpe;
 		//thisShi = BmatShi;
-		////original
 		vMat.identity().setTranslation(-cameraLoc.x(), -cameraLoc.y(), -cameraLoc.z());
 		
 		vMat.mul(camera.getVMat());
 		
 		currentLightPos.set(lightLoc);
 		
-		//installLights(renderingProgram2, vMat);
-		//test
 		installLights(envRenderingProgram, vMat);
-		//installTexture(envRenderingProgram, vMat);
 		
 		mMat.identity();
 		mMat.translate(torusLoc.x(), torusLoc.y(), torusLoc.z());
@@ -517,7 +532,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		// draw the pyramid
 		
 		gl.glUseProgram(renderingProgram2);
-		//gl.glUseProgram(geoRenderingProgram);
 		mvLoc = gl.glGetUniformLocation(renderingProgram2, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(renderingProgram2, "proj_matrix");
 		nLoc = gl.glGetUniformLocation(renderingProgram2, "norm_matrix");
@@ -678,8 +692,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		
 		gl.glActiveTexture(GL_TEXTURE1);
 		gl.glBindTexture(GL_TEXTURE_2D, shuttleTexture);
-		//gl.glActiveTexture(GL_TEXTURE0);
-		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
@@ -689,7 +701,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glDrawArrays(GL_TRIANGLES, 0, numObjVertices);
 		
 		//draw the dolphin
-
 		mMat.identity();
 		mMat.translate(dolphinLoc.x(), dolphinLoc.y(), dolphinLoc.z());
 
@@ -698,8 +709,6 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		installTexture(textureRenderingProgram, vMat);
 
 		gl.glUseProgram(textureRenderingProgram);
-		//gl.glUseProgram(skyboxRenderingProgram);
-		//gl.glUseProgram(renderingProgram2);
 		
 		mvLoc = gl.glGetUniformLocation(textureRenderingProgram, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(textureRenderingProgram, "proj_matrix");
@@ -737,11 +746,9 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(2);
 		
-		//gl.glUseProgram(skyboxRenderingProgram);
 		gl.glActiveTexture(GL_TEXTURE1);
 		gl.glBindTexture(GL_TEXTURE_2D, dolphinTexture);
-		//gl.glActiveTexture(GL_TEXTURE1);
-		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
 		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
@@ -759,13 +766,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		installTexture(texture3dRenderingProgram, vMat);
 
 		gl.glUseProgram(texture3dRenderingProgram);
-		//gl.glUseProgram(skyboxRenderingProgram);
-		//gl.glUseProgram(renderingProgram2);
 		
 		mvLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "mv_matrix");
 		projLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "proj_matrix");
-		nLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "norm_matrix");
-		//sLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "shadowMVP");
+		nLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "norm_matrix");;
 		
 		mvMat.identity();
 		mvMat.mul(vMat);
@@ -790,19 +794,10 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 		
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
-		//gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
-		//gl.glEnableVertexAttribArray(1);
-		
-		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
-		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
-		//gl.glEnableVertexAttribArray(2);
-		
 		//gl.glUseProgram(skyboxRenderingProgram);
 		gl.glActiveTexture(GL_TEXTURE0);
 		gl.glBindTexture(GL_TEXTURE_3D, stripeTexture);
-		//gl.glActiveTexture(GL_TEXTURE1);
-		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
 		
 		gl.glEnable(GL_CULL_FACE);
 		gl.glFrontFace(GL_CCW);
@@ -811,15 +806,76 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, num3dDolVertices);
 		
+        //draw bump mapped torus
+		thisAmb = BmatAmb; // the torus is bronze
+		thisDif = BmatDif;
+	    thisSpe = BmatSpe;
+		thisShi = BmatShi;
+		
+		gl.glUseProgram(bumpRenderingProgram);
+
+		mvLoc = gl.glGetUniformLocation(bumpRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(bumpRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(bumpRenderingProgram, "norm_matrix");
+		
+		currentLightPos.set(lightLoc);
+		
+		installLights(bumpRenderingProgram, vMat);
+		
+		mMat.identity();
+		mMat.translate(bumpTorusLoc.x(), bumpTorusLoc.y(), bumpTorusLoc.z());
+		
+		mvMat.identity();
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		shadowMVP2.identity();
+		shadowMVP2.mul(b);
+		shadowMVP2.mul(lightPmat);
+		shadowMVP2.mul(lightVmat);
+		shadowMVP2.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+	
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+
+		//vertex
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[20]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		//normals
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[21]);
+		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(1);
+	
+		//gl.glClear(GL_DEPTH_BUFFER_BIT);
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+	
+		//indices
+		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[23]);
+		gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		gl.glDrawElements(GL_TRIANGLES, numTorusIndices, GL_UNSIGNED_INT, 0);
 		
 		//draw light location
+     	gl.glUseProgram(texture3dRenderingProgram);
+		mvLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "norm_matrix");
+		
 		currentLightPos.set(lightLoc);
 		gl.glPointSize(12);
 		mMat.identity();
 		mMat.translate(lightLoc.x(), lightLoc.y(), lightLoc.z());
-		//currentLightPos.set(lightLoc);
 		
-		installLights(renderingProgram2, vMat);
+		installLights(texture3dRenderingProgram, vMat);
 
 		mvMat.identity();
 		mvMat.mul(vMat);
@@ -962,6 +1018,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		envRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emFragShader.glsl");
 		geoRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\geomShader.glsl","C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\fragShader.glsl");
 		texture3dRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dFragShader.glsl");
+		bumpRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\bumpVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\bumpFragShader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
@@ -1057,6 +1114,31 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			torusNvalues[i*3]   = (float) normals[i].x();
 			torusNvalues[i*3+1] = (float) normals[i].y();
 			torusNvalues[i*3+2] = (float) normals[i].z();
+		}
+		
+		//bump mapped torus definition
+		myBumpTorus = new Torus(0.6f, 0.4f, 96); //def 48
+		numBumpTorusVerts = myBumpTorus.getNumVertices();
+		numBumpTorusIndices = myBumpTorus.getNumIndices();
+		Vector2f[] bumpTorusTexCoords = myBumpTorus.getTexCoords();
+		
+		vertices = myBumpTorus.getVertices();
+		normals = myBumpTorus.getNormals();
+		int[] bumpIndices = myBumpTorus.getIndices();
+		
+		float[] bumpTorusPvalues = new float[vertices.length*3];
+		float[] bumpTorusNvalues = new float[normals.length*3];
+		float[] bumpTorusTvalues = new float[bumpTorusTexCoords.length*2];
+
+		for (int i=0; i<numBumpTorusVerts; i++)
+		{	bumpTorusPvalues[i*3]   = (float) vertices[i].x();
+			bumpTorusPvalues[i*3+1] = (float) vertices[i].y();
+			bumpTorusPvalues[i*3+2] = (float) vertices[i].z();
+			bumpTorusTvalues[i*2]   = (float) torusTexCoords[i].x();
+			bumpTorusTvalues[i*2+1] = (float) torusTexCoords[i].y();
+			bumpTorusNvalues[i*3]   = (float) normals[i].x();
+			bumpTorusNvalues[i*3+1] = (float) normals[i].y();
+			bumpTorusNvalues[i*3+2] = (float) normals[i].z();
 		}
 		
 		//sphere definition
@@ -1189,7 +1271,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(20, vbo, 0);
+		gl.glGenBuffers(24, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -1292,6 +1374,23 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[19]);
 		FloatBuffer dT3dexBuf = Buffers.newDirectFloatBuffer(dolphinTvalues3d);
 		gl.glBufferData(GL_ARRAY_BUFFER, dT3dexBuf.limit()*4, dT3dexBuf, GL_STATIC_DRAW);
+		
+		//bump mapped torus
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[20]);
+		FloatBuffer bumpVertBuf = Buffers.newDirectFloatBuffer(bumpTorusPvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, bumpVertBuf.limit()*4, bumpVertBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[21]);
+		FloatBuffer bumpTorusNorBuf = Buffers.newDirectFloatBuffer(bumpTorusNvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, bumpTorusNorBuf.limit()*4, bumpTorusNorBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[22]);
+		FloatBuffer bumpTorTexBuf = Buffers.newDirectFloatBuffer(bumpTorusTvalues);
+		gl.glBufferData(GL_ARRAY_BUFFER, bumpTorTexBuf.limit()*4, bumpTorTexBuf, GL_STATIC_DRAW);
+		
+		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[23]);
+		IntBuffer bumpIdxBuf = Buffers.newDirectIntBuffer(bumpIndices);
+		gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, bumpIdxBuf.limit()*4, bumpIdxBuf, GL_STATIC_DRAW);
 		
 		}
 	
