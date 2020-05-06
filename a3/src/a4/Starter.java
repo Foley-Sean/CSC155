@@ -28,9 +28,10 @@ import org.joml.*;
 public class Starter extends JFrame implements GLEventListener, MouseListener, MouseMotionListener, MouseWheelListener
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2, axesRenderingProgram, 
-	textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram, geoRenderingProgram;
+	textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram,
+	geoRenderingProgram, texture3dRenderingProgram;
 	private int vao[] = new int[1];
-	private int vbo[] = new int[18];
+	private int vbo[] = new int[20];
 
 	// model stuff
 	private ImportedModel pyramid;
@@ -45,9 +46,16 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private ImportedModel dolphin;
 	private int numDolVertices;
 	private int dolphinTexture;
-	
+	private int num3dDolVertices;
 	//skybox
 	private int skyboxTexture;
+	//3d texture
+	private int stripeTexture;
+	private int texHeight= 200;
+	private int texWidth = 200;
+	private int texDepth = 200;
+	private double[][][] tex3Dpattern = new double[texHeight][texWidth][texDepth];
+	
 	
 	// location of torus, shuttle, mil falcon, pyramid, light, sphere and camera
 	private Vector3f torusLoc = new Vector3f(1.6f, 4.0f, -0.3f);
@@ -57,6 +65,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private Vector3f cameraLoc = new Vector3f(0.0f, 0.2f, 6.0f);
 	private Vector3f lightLoc = new Vector3f(-3.8f, 2.2f, 1.1f);
 	private Vector3f sphereLoc = new Vector3f(-5.0f, -2.0f, -1.0f);
+	private Vector3f dolphin3dLoc = new Vector3f(4.5f, 0.6f, 1.2f);
 	//moveable light loc
 	private Vector3f movLightLoc = new Vector3f(3.8f, -1.2f, -1.5f);
 	
@@ -398,6 +407,30 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	
 		gl.glDrawArrays(GL_TRIANGLES, 0, numDolVertices);
 		
+		//draw 3d dolphin
+		gl.glUseProgram(texture3dRenderingProgram);
+		mMat.identity();
+		mMat.translate(dolphin3dLoc.x(), dolphin3dLoc.y(), dolphin3dLoc.z());
+		
+		shadowMVP1.identity();
+		shadowMVP1.mul(lightPmat);
+		shadowMVP1.mul(lightVmat);
+		shadowMVP1.mul(mMat);
+		
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP1.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[17]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+	
+		gl.glDrawArrays(GL_TRIANGLES, 0, num3dDolVertices);
+		
+		
 	}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	public void passTwo()
@@ -536,7 +569,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numPyramidVertices);
 		
-		//draw the sphere
+		//draw the sphere for geometry shader
 		gl.glUseProgram(geoRenderingProgram);
 		//gl.glUseProgram(renderingProgram2);
 		mvLoc = gl.glGetUniformLocation(geoRenderingProgram, "mv_matrix");
@@ -717,7 +750,68 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 		gl.glDrawArrays(GL_TRIANGLES, 0, numDolVertices);
 		
-		//
+		//Draw 3d texture Dolphin
+		mMat.identity();
+		mMat.translate(dolphin3dLoc.x(), dolphin3dLoc.y(), dolphin3dLoc.z());
+
+		currentLightPos.set(lightLoc);
+		
+		installTexture(texture3dRenderingProgram, vMat);
+
+		gl.glUseProgram(texture3dRenderingProgram);
+		//gl.glUseProgram(skyboxRenderingProgram);
+		//gl.glUseProgram(renderingProgram2);
+		
+		mvLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "norm_matrix");
+		//sLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "shadowMVP");
+		
+		mvMat.identity();
+		mvMat.mul(vMat);
+		mvMat.mul(mMat);
+		
+		shadowMVP2.identity();
+		shadowMVP2.mul(b);
+		shadowMVP2.mul(lightPmat);
+		shadowMVP2.mul(lightVmat);
+		shadowMVP2.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+	
+		
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		gl.glUniformMatrix4fv(sLoc, 1, false, shadowMVP2.get(vals));
+		
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[17]);
+		gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
+		
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[10]);
+		//gl.glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+		//gl.glEnableVertexAttribArray(1);
+		
+		//gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[11]);
+		//gl.glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+		//gl.glEnableVertexAttribArray(2);
+		
+		//gl.glUseProgram(skyboxRenderingProgram);
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_3D, stripeTexture);
+		//gl.glActiveTexture(GL_TEXTURE1);
+		//gl.glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CCW);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glDepthFunc(GL_LEQUAL);
+
+		gl.glDrawArrays(GL_TRIANGLES, 0, num3dDolVertices);
+		
+		
 		//draw light location
 		currentLightPos.set(lightLoc);
 		gl.glPointSize(12);
@@ -867,10 +961,14 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		skyboxRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\skyboxFragShader.glsl ");
 		envRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\emFragShader.glsl");
 		geoRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\geomShader.glsl","C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\fragShader.glsl");
+		texture3dRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dFragShader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
 		
+		//3d texture
+		generate3Dpattern();	
+		stripeTexture = load3DTexture();
 		//skybox
 		skyboxTexture = Utils.loadCubeMap("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\cubeMap");
 		gl.glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -1031,6 +1129,28 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 			dolphinNvalues[i*3+2] = (float) (normals[i]).z();
 		}
 		
+		//3d text dolphin
+		ImportedModel my3dDolphin = new ImportedModel("../dolphinHighPoly.obj");
+		num3dDolVertices = my3dDolphin.getNumVertices();
+		
+		Vector2f[] texCoords3d = my3dDolphin.getTexCoords();
+		Vector3f[] vertices3d = my3dDolphin.getVertices();
+		Vector3f[] normals3d = my3dDolphin.getNormals();
+		
+		float[] dolphinPvalues3d = new float[num3dDolVertices*3];
+		float[] dolphinNvalues3d = new float[num3dDolVertices*3];
+		float[] dolphinTvalues3d = new float[num3dDolVertices*2];
+		
+		for (int i=0; i<numDolVertices; i++)
+		{	dolphinPvalues3d[i*3]   = (float) (vertices3d[i]).x();
+			dolphinPvalues3d[i*3+1] = (float) (vertices3d[i]).y();
+			dolphinPvalues3d[i*3+2] = (float) (vertices3d[i]).z();
+			dolphinTvalues3d[i*2]   = (float) (texCoords3d[i]).x();
+			dolphinTvalues3d[i*2+1] = (float) (texCoords3d[i]).y();
+			dolphinNvalues3d[i*3]   = (float) (normals3d[i]).x();
+			dolphinNvalues3d[i*3+1] = (float) (normals3d[i]).y();
+			dolphinNvalues3d[i*3+2] = (float) (normals3d[i]).z();
+		}
 		
 		//light as a cube
 		float[] cubePositions =
@@ -1069,7 +1189,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glGenVertexArrays(vao.length, vao, 0);
 		gl.glBindVertexArray(vao[0]);
 
-		gl.glGenBuffers(18, vbo, 0);
+		gl.glGenBuffers(20, vbo, 0);
 
 		//  put the Torus vertices into the first buffer,
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -1156,7 +1276,99 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[16]);
 		FloatBuffer spNorBuf = Buffers.newDirectFloatBuffer(nvalues);
 		gl.glBufferData(GL_ARRAY_BUFFER, spNorBuf.limit()*4,spNorBuf, GL_STATIC_DRAW);
+		
+		//3d dolphin
+		//vertices
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[17]);
+		FloatBuffer dol3dVertBuf = Buffers.newDirectFloatBuffer(dolphinPvalues3d);
+		gl.glBufferData(GL_ARRAY_BUFFER, dol3dVertBuf.limit()*4, dol3dVertBuf, GL_STATIC_DRAW);
+		
+		//n coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[18]);
+		FloatBuffer dol3dNorBuf = Buffers.newDirectFloatBuffer(dolphinNvalues3d);
+		gl.glBufferData(GL_ARRAY_BUFFER, dol3dNorBuf.limit()*4, dol3dNorBuf, GL_STATIC_DRAW);
+		
+		//texture coords
+		gl.glBindBuffer(GL_ARRAY_BUFFER, vbo[19]);
+		FloatBuffer dT3dexBuf = Buffers.newDirectFloatBuffer(dolphinTvalues3d);
+		gl.glBufferData(GL_ARRAY_BUFFER, dT3dexBuf.limit()*4, dT3dexBuf, GL_STATIC_DRAW);
+		
 		}
+	
+	private void fillDataArray(byte data[])
+	{ for (int i=0; i<texWidth; i++)
+	  { for (int j=0; j<texHeight; j++)
+	    { for (int k=0; k<texDepth; k++)
+	      {
+		if (tex3Dpattern[i][j][k] == 1.0)
+		{	// yellow color
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+0] = (byte) 255; //red
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+1] = (byte) 255; //green
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+2] = (byte) 0;   //blue
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+3] = (byte) 0;   //alpha
+		}
+		else
+		{	// blue color
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+0] = (byte) 0;   //red
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+1] = (byte) 0;   //green
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+2] = (byte) 255; //blue
+			data[i*(texWidth*texHeight*4)+j*(texHeight*4)+k*4+3] = (byte) 0;   //alpha
+		}
+	} } } }
+	
+	private int load3DTexture()
+	{	GL4 gl = (GL4) GLContext.getCurrentGL();
+	
+		byte[] data = new byte[texWidth*texHeight*texDepth*4];
+		
+		fillDataArray(data);
+
+		ByteBuffer bb = Buffers.newDirectByteBuffer(data);
+
+		int[] textureIDs = new int[1];
+		gl.glGenTextures(1, textureIDs, 0);
+		int textureID = textureIDs[0];
+
+		gl.glBindTexture(GL_TEXTURE_3D, textureID);
+
+		gl.glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, texWidth, texHeight, texDepth);
+		gl.glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0,
+				texWidth, texHeight, texDepth, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, bb);
+		
+		gl.glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		return textureID;
+	}
+	/*
+	void generate3Dpattern()
+	{	for (int x=0; x<texWidth; x++)
+		{	for (int y=0; y<texHeight; y++)
+			{	for (int z=0; z<texDepth; z++)
+				{	if ((y/10)%2 == 0)
+						tex3Dpattern[x][y][z] = 0.0;
+					else
+						tex3Dpattern[x][y][z] = 1.0;
+	}	}	}	}
+	*/
+	//  replace above function with the one below
+	//	to change the stripes to a checkerboard.
+	
+	void generate3Dpattern()
+	{	int xStep, yStep, zStep, sumSteps;
+		for (int x=0; x<texWidth; x++)
+		{	for (int y=0; y<texHeight; y++)
+			{	for (int z=0; z<texDepth; z++)
+				{	xStep = (x / 10) % 2;
+					yStep = (y / 10) % 2;
+					zStep = (z / 10) % 2;
+					sumSteps = xStep + yStep + zStep;
+					if ((sumSteps % 2) == 0)
+						tex3Dpattern[x][y][z] = 0.0;
+					else
+						tex3Dpattern[x][y][z] = 1.0;
+	}	}	}	}
+	
+	
 	
 	private void installLights(int renderingProgram, Matrix4f vMatrix)
 	{	GL4 gl = (GL4) GLContext.getCurrentGL();
