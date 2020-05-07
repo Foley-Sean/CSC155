@@ -140,7 +140,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private boolean showAxes;
 	
 	public Starter()
-	{	setTitle("Chapter8 - program 2");
+	{	setTitle("Sean Foley - Assignment 4");
 		setSize(800, 800);
 		myCanvas = new GLCanvas();
 		myCanvas.addGLEventListener(this);
