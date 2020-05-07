@@ -29,7 +29,7 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 {	private GLCanvas myCanvas;
 	private int renderingProgram1, renderingProgram2, axesRenderingProgram, 
 	textureRenderingProgram, skyboxRenderingProgram, envRenderingProgram,
-	geoRenderingProgram, texture3dRenderingProgram, bumpRenderingProgram;
+	geoRenderingProgram, texture3dRenderingProgram, bumpRenderingProgram, tessRenderingProgram;
 	private int vao[] = new int[1];
 	private int vbo[] = new int[24];
 
@@ -57,9 +57,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private int texWidth = 200;
 	private int texDepth = 200;
 	private double[][][] tex3Dpattern = new double[texHeight][texWidth][texDepth];
+	//moon surface
+	private int squareMoonTexture;
+	private int squareMoonHeight;
+	private int squareMoonNormalMap;
 	
-	
-	// location of torus, shuttle, mil falcon, pyramid, light, sphere and camera
+	// location of torus, shuttle pyramid, light, sphere, dolphins, terrain and camera
 	private Vector3f torusLoc = new Vector3f(1.6f, 4.0f, -0.3f);
 	private Vector3f pyrLoc = new Vector3f(-1.0f, 0.1f, 0.3f);
 	private Vector3f shutLoc = new Vector3f( -3.0f, 0.4f, 0.6f);
@@ -69,6 +72,12 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 	private Vector3f sphereLoc = new Vector3f(-5.0f, -2.0f, -1.0f);
 	private Vector3f dolphin3dLoc = new Vector3f(4.5f, 0.6f, 1.2f);
 	private Vector3f bumpTorusLoc = new Vector3f(-1.6f, 4.0f, -0.3f);
+	private Vector3f terLoc = new Vector3f(0.0f, -30.0f, 0.0f);
+	//tess
+	private float tessInner = 30.0f;
+	private float tessOuter = 20.0f;
+	private Matrix4f mvpMat = new Matrix4f();
+	private int mvpLoc;
 	//moveable light loc
 	private Vector3f movLightLoc = new Vector3f(3.8f, -1.2f, -1.5f);
 	
@@ -455,6 +464,8 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 
 		gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[23]);
 		gl.glDrawElements(GL_TRIANGLES, numBumpTorusIndices, GL_UNSIGNED_INT, 0);
+		
+		//draw moon texture?
 		
 		
 	}
@@ -864,6 +875,61 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		gl.glEnableVertexAttribArray(0);
 		gl.glDrawElements(GL_TRIANGLES, numTorusIndices, GL_UNSIGNED_INT, 0);
 		
+		//draw moon surface
+		gl.glUseProgram(tessRenderingProgram);
+		mvpLoc = gl.glGetUniformLocation(tessRenderingProgram, "mvp");
+		mvLoc = gl.glGetUniformLocation(tessRenderingProgram, "mv_matrix");
+		projLoc = gl.glGetUniformLocation(tessRenderingProgram, "proj_matrix");
+		nLoc = gl.glGetUniformLocation(tessRenderingProgram, "norm_matrix");
+		
+		thisAmb = Utils.silverAmbient(); // the moon is "silver'
+		thisDif = Utils.silverDiffuse();
+	    thisSpe = Utils.silverSpecular();
+		thisShi = Utils.silverShininess();
+		
+		mMat.identity().setTranslation(terLoc.x(), terLoc.y(), terLoc.z());
+		mMat.scale(200.0f);
+		mvpMat.identity();
+		mvpMat.mul(pMat);
+		mvpMat.mul(vMat);
+		mvpMat.mul(mMat);
+		
+		shadowMVP2.identity();
+		shadowMVP2.mul(b);
+		shadowMVP2.mul(lightPmat);
+		shadowMVP2.mul(lightVmat);
+		shadowMVP2.mul(mMat);
+		
+		mvMat.invert(invTrMat);
+		invTrMat.transpose(invTrMat);
+		
+		//mMat.scale(20.0f);
+		
+		currentLightPos.set(lightLoc);		
+		installLights(tessRenderingProgram,vMat);
+		
+		gl.glUniformMatrix4fv(mvpLoc, 1, false, mvpMat.get(vals));
+		gl.glUniformMatrix4fv(mvLoc, 1, false, mvMat.get(vals));
+		gl.glUniformMatrix4fv(projLoc, 1, false, pMat.get(vals));
+		gl.glUniformMatrix4fv(nLoc, 1, false, invTrMat.get(vals));
+		
+		gl.glActiveTexture(GL_TEXTURE0);
+		gl.glBindTexture(GL_TEXTURE_2D, squareMoonTexture);
+		gl.glActiveTexture(GL_TEXTURE1);
+		gl.glBindTexture(GL_TEXTURE_2D, squareMoonHeight);
+		gl.glActiveTexture(GL_TEXTURE2);
+		gl.glBindTexture(GL_TEXTURE_2D, squareMoonNormalMap);
+	
+		gl.glClear(GL_DEPTH_BUFFER_BIT);
+		gl.glEnable(GL_DEPTH_TEST);
+		gl.glEnable(GL_CULL_FACE);
+		gl.glFrontFace(GL_CW);
+
+		gl.glPatchParameteri(GL_PATCH_VERTICES, 4);
+		gl.glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		gl.glDrawArraysInstanced(GL_PATCHES, 0, 4, 64*64);
+		
+		
 		//draw light location
      	gl.glUseProgram(texture3dRenderingProgram);
 		mvLoc = gl.glGetUniformLocation(texture3dRenderingProgram, "mv_matrix");
@@ -1019,9 +1085,15 @@ public class Starter extends JFrame implements GLEventListener, MouseListener, M
 		geoRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\vertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\geomShader.glsl","C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\fragShader.glsl");
 		texture3dRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\3dFragShader.glsl");
 		bumpRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\bumpVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\bumpFragShader.glsl");
+		tessRenderingProgram = Utils.createShaderProgram("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\tVertShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\tessCShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\tessEShader.glsl", "C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\a4\\tFragShader.glsl");
 		//shuttle texture
 		shuttleTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\spstob_1.jpg");
 		dolphinTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\Dolphin_HighPolyUV.png");
+		
+		//moon textures
+		squareMoonTexture = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\squareMoonMap.jpg");
+		squareMoonHeight = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\squareMoonBump.jpg");
+		squareMoonNormalMap = Utils.loadTexture("C:\\Users\\Sean Foley\\git\\CS155\\a3\\src\\squareMoonNormal.jpg");
 		
 		//3d texture
 		generate3Dpattern();	
